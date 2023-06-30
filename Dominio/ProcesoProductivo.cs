@@ -11,8 +11,7 @@
         {
             // logica de inicio
             // saca el primer mensaje y lo envia.
-            throw new NotImplementedException();
-
+            return programacion.Peek();
         }
     }
 }

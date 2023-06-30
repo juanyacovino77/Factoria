@@ -21,35 +21,22 @@ namespace API.Hubs.PuertoDeEntrada;
 
 public class MensajeriaHub : Hub
 {
-    public Servicios servicios { get; set; }
+    private IServicios _servicios { get; set; }
 
     public MensajeriaHub()
     {
-
+        _servicios = new Servicios();
     }
 
-    public async Task IniciarSesion(dynamic solicitud)
+    public async Task<IServicios.RespuestaAccionarMensaje> AccionarMensaje(dynamic solicitud)
     {
-        // mapear DTO entrante a DTO siguiente (hub -> Servicios)
-        
+        var respuesta = this._servicios.AccionarMensaje(solicitud);
 
     }
 
-    public async Task EnviarMensaje(dynamic solicitud)
-    {
-        // mapear DTO de esta capa a los de Servicios
-        var solicitudDTO = new SolicitudEnviarMensaje();
 
-        // mandar el DTO de servicios al Servicio
-        var respuesta = servicios.EnviarMensaje(solicitudDTO);
 
-        // segun la respuesta, le puedo mandar mensajes a otros clientes
-        // dominio, ya respondió, supero validaciones, etc etc
-        // ahora el hub puede reenviar ese mensaje que viene en respueta
 
-        await Clients.All.SendAsync("RecibirNuevoMensaje", respuesta); 
 
-        // y le devuelvo la respuesta al cliente
 
-    }
 }

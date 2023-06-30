@@ -120,6 +120,9 @@ namespace dominio
         public Mensaje IniciarProcesoProductivo(int idpp)
         {
             var mensaje = this.procesosProductivos.Find(pp => pp.codigo == idpp).IniciarProcesoProductivo();
+            var destinatarios = mensaje.receptores;
+            destinatarios[0].RecibirMensajeDelMensajero(mensaje);
+
             return mensaje;
         }
 

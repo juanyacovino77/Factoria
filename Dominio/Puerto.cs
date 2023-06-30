@@ -1,6 +1,7 @@
 ﻿namespace dominio
 {
-    public class Puerto : IServiciosOfrecidosPorDominio
+
+    public class Puerto : IDominio
     {
 
         /* Clase que comunica la capa de Servicios con los objetos de 
@@ -11,12 +12,49 @@
          * que a su vez media entre el exterior (capa servicios) y el interior
          */
 
-        private Negocio negocio { get; set; }
-
-        public dynamic SolicitudCrearEmpleado(dynamic actor, dynamic solicitud)
+        private Negocio _negocio { get; set; }
+        public Puerto() 
         {
-            var trabajador = negocio.ObtenerEmpleadoPorId(actor.id) as Administrador;
-            var sector = negocio.ObtenerSectorPorId(solicitud.idSector) as Sector;
+            _negocio = new Negocio();
+        }
+
+
+        public dynamic IniciarSesion(dynamic solicitud)
+        {
+            // existe el empleado?
+            var actor = _negocio.ObtenerEmpleadoPorId(solicitud.actor.id);
+
+            // si existe, le devolve su informacion
+            return actor is null
+                ? new { auth = "No sos empleado" }
+                : new { auth = "Correcto", empleado = actor };
+
+        }
+        public dynamic AbrirTurno(dynamic solicitud)
+        {
+            var actor = _negocio.ObtenerEmpleadoPorId(solicitud.actor.id);
+
+            var respuesta = actor.AbrirTurno();
+
+            /* esto tendria que devolver, un objeto que contenga info de,
+             * si existe como empleado, qué tipo de empleado es, y 
+             * toda la info y permisos que necesita la app cliente
+             * para que pueda trabajar, y para que el fronton pueda
+             * renderizar esta info. por ejemplo, permisos, mensajes,
+             * etc etc
+             */
+            return respuesta;
+        }
+        public dynamic CerrarTurno(dynamic solicitud)
+        {
+            var actor = this._negocio.ObtenerEmpleadoPorId(solicitud.actor.id) as Trabajador;
+
+            return actor.CerrarTurno();
+        }
+        public dynamic CrearEmpleado(dynamic solicitud)
+        {
+            var trabajador = _negocio.ObtenerEmpleadoPorId(solicitud.actor.id) as Administrador;
+            var sector = _negocio.ObtenerSectorPorId(solicitud.idSector) as Sector;
 
             // Autenticar al empleado. ¿Existe el empleado?
             var administrador = trabajador is not null
@@ -28,20 +66,19 @@
                 ? administrador.CrearEmpleado(solicitud.id, solicitud.nombre, sector) 
                 : throw new Exception("No sos administrador");
 
-            this.negocio.AñadirEmpleado(respuesta);
+            this._negocio.AñadirEmpleado(respuesta);
 
             return new { msj = respuesta };
         }
-
-        public dynamic SolicitudModificarEmpleado(dynamic actor, dynamic solicitud)
+        public dynamic ModificarEmpleado(dynamic solicitud)
         {
             // depende de lo que quieras modificar. Si el empleado quiere
             // modificar su informacion personal? lo puede hacer...
             // si quiere modificar info sensible como el sector? no puede.. (solo admin)
             // o solo puede modificar cualquier info del empleado un admin
 
-            var empleado = negocio.ObtenerEmpleadoPorId(actor.id) as Administrador;
-            var empleado_a_modificar = negocio.ObtenerEmpleadoPorId(solicitud.id) as Trabajador;
+            var empleado = _negocio.ObtenerEmpleadoPorId(actor.id) as Administrador;
+            var empleado_a_modificar = _negocio.ObtenerEmpleadoPorId(solicitud.id) as Trabajador;
 
             // Autenticar al empleado. ¿Existe el empleado?
             var administrador = empleado is not null
@@ -54,18 +91,17 @@
                 : throw new Exception("No sos administrador");
 
 
-            this.negocio.Guardar(empleado);
+            this._negocio.Guardar(empleado);
 
             return respuesta;
         }
-
-        public dynamic SolicitudEnviarMensaje(dynamic solicitud)
+        public dynamic EnviarMensaje(dynamic solicitud)
         {
             var actor = solicitud.actor;
 
-            var empleado = negocio.ObtenerEmpleadoPorId(actor.id) as Trabajador;
-            var destinatarios = negocio.ObtenerEmpleadosPorId(solicitud.destinatarios) as List<Trabajador>;
-            var actuadores = negocio.ObtenerEmpleadosPorId(solicitud.actuadores);
+            var empleado = _negocio.ObtenerEmpleadoPorId(actor.id) as Trabajador;
+            var destinatarios = _negocio.ObtenerEmpleadosPorId(solicitud.destinatarios) as List<Trabajador>;
+            var actuadores = _negocio.ObtenerEmpleadosPorId(solicitud.actuadores);
             
             // Autenticar al actor. ¿Es un empleado?
             empleado = empleado is not null
@@ -90,49 +126,62 @@
 
             return mensaje;
         }
-
-        public dynamic SolicitudAccionarMensaje(dynamic actor, dynamic solicitud)
+        public dynamic AccionarMensaje(dynamic solicitud)
         {
-            var empleado = negocio.ObtenerEmpleadoPorId(actor.id) as Trabajador;
+            var empleado = _negocio.ObtenerEmpleadoPorId(solicitud.actor.id) as Trabajador;
 
             if (empleado is null) throw new Exception("No sos empleado");
 
             var mensaje_de_respuesta = empleado.AccionarMensaje(solicitud.idMensaje, solicitud.idNuevoEstado);
 
+
+            // esto tiene sentido a nivel UI, son notificaciones
+            // para resfrescar la UI y hacerle enteerar a la app cliente
+            // que cambió el estado de un Mensaje.Dentro del dominio, solo
+            // se le cambiaria el estado a la instancia del Mensaje y nada mas
+            // porque despues se persiste eso y cuando otro empleado levanta ese
+            // mensaje, ya tendria que tener la actualziacion de estado teoricamente.
+
+            // y en el caso de proceso productivos???
+
             foreach (var destinatario in mensaje_de_respuesta.destinatarios)
             {
                 destinatario.RecibirMensajeDelMensajero(mensaje_de_respuesta);
-                negocio.Guardar(destinatario);
+                _negocio.Guardar(destinatario);
             }
 
             return mensaje_de_respuesta;
 
         }
-
-        public dynamic SolicitudIniciarProcesoProductivo(dynamic actor, dynamic solicitud)
+        public dynamic DesencadenarProcesoProductivo(dynamic solicitud)
         {
-            var empleado = negocio.ObtenerEmpleadoPorId(actor.id) as Administrador;
+            var empleado = _negocio.ObtenerEmpleadoPorId(solicitud.actor.id) as Administrador;
 
             if (empleado is null) throw new Exception("No sos empleado");
             if (empleado is not Administrador) throw new Exception("No sos administrador");
 
             var mensaje = empleado.IniciarProcesoProductivo(solicitud.idpp);
 
-            foreach (var destinatario in mensaje.destinatarios)
-            {
-                destinatario.RecibirMensajeDelMensajero(mensaje);
-                negocio.Guardar(destinatario);
-            }
+
 
             return mensaje;
         }
+
+
+        
+
+
     }
 
-    public interface IServiciosOfrecidosPorDominio
+    public interface IDominio
     {
-        dynamic SolicitudCrearEmpleado(dynamic actor, dynamic solicitud);
-        dynamic SolicitudModificarEmpleado(dynamic actor, dynamic solicitud);
-        dynamic SolicitudEnviarMensaje(dynamic solicitud);
+        dynamic IniciarSesion(dynamic solicitud);
+        dynamic AbrirTurno(dynamic solicitud);
+        dynamic CerrarTurno(dynamic solicitud);
+        dynamic CrearEmpleado(dynamic solicitud);
+        dynamic ModificarEmpleado(dynamic solicitud);
+        dynamic EnviarMensaje(dynamic solicitud);
+        dynamic AccionarMensaje(dynamic solicitud);
     }
 
 }

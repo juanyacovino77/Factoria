@@ -1,4 +1,5 @@
 ﻿using dominio;
+using static puertos.IServicios;
 namespace puertos;
 
 
@@ -45,48 +46,40 @@ namespace puertos;
 */
 
 
-public class Servicios
+public class Servicios : IServicios
 { // esto tendria que ser un singleton
-    private IServiciosOfrecidosPorDominio _dominio { get; set; } // segregar esta interfaz
+    private IDominio _dominio { get; set; } // segregar esta interfaz
 
 
     public Servicios()
     {
-        _dominio = new Puerto(); // interior
-    }   
-
-    public RespuestaCrearEmpleado CrearEmpleado(SolicitudCrearEmpleado solicitud)
-    {
-        // mapear dto exterior con dto interior
-        // y mandar el dto de dominio 
-
-        var respuesta = _dominio.SolicitudCrearEmpleado(solicitud, solicitud);
-
-        /*
-         
-        // si es necesario, si supera la validaciones, usar ORM
-        _repositorio.SaveContext(empleado); 
-
-        // si es necesario, usar SMS chat o WhatsApp
-        _comunicaciones.NotificarPorSMS("Nuevo empleado registrado");
-
-        // si es necesario, usar logger
-        _logger.LogearEstado("/app/empleados/log.txt", "Un nuevo empleado fue creado por { } ");
-
-        // si es necesario, usar signalR o websockets
-        _signalR.EnviarSeñal(); 
-        
-         */
-
-        return new RespuestaCrearEmpleado(); // construir este objeto de devolucion
+        _dominio = new Puerto(); // interior Puerto AL dominio, puerto HACIA el dominio; -in, -ex
     }
 
+    #region CASOS DE USO MENSAJERIA - Metodos consumidos por API SIGNALR - empleado-empleado
+    public RespuestaIniciarSesion IniciarSesion(SolicitudIniciarSesion solicitud)
+    {
+        var respuesta = this._dominio.IniciarSesion(solicitud);
+        // aca vuelve toda la info del objeto empleado
+        return new RespuestaIniciarSesion();
+    }
+    public RespuestaAbrirTurno AbrirTurno(SolicitudAbrirTurno solicitud)
+    {
+        var respuesta = this._dominio.AbrirTurno(solicitud);
+
+        return respuesta;
+        
+    }
+    public RespuestaCerrarTurno CerrarTurno(SolicitudCerrarTurno solicitud)
+    {
+        return this._dominio.CerrarTurno(solicitud);
+    }
     public RespuestaEnviarMensaje EnviarMensaje(SolicitudEnviarMensaje solicitud)
     {
         // mapear dto de Servicios con la de Dominio
 
         // consumir los servicios del Dominio
-        var respuesta = _dominio.SolicitudEnviarMensaje(solicitud);
+        var respuesta = _dominio.EnviarMensaje(solicitud);
 
         // respuesta tendria el mensaje que tendria que retornar a Hub
         // para que desde ahí se reenvia a otros clientes
@@ -107,12 +100,73 @@ public class Servicios
 
         return new RespuestaEnviarMensaje();
     }
+    public RespuestaAccionarMensaje AccionarMensaje(SolicitudAccionarMensaje solicitud)
+    {
+        var respuesta = this._dominio.AccionarMensaje(solicitud);
 
+        return respuesta;
+    }
+    #endregion
+
+    #region CASOS DE USO CRUD - Metodos consumidos por API REST - administrador-empleados
+    public RespuestaCrearEmpleado CrearEmpleado(SolicitudCrearEmpleado solicitud)
+    {
+        // mapear dto exterior con dto interior
+        // y mandar el dto de dominio 
+
+        var respuesta = _dominio.CrearEmpleado(solicitud, solicitud);
+
+        /*
+         
+        // si es necesario, si supera la validaciones, usar ORM
+        _repositorio.SaveContext(empleado); 
+
+        // si es necesario, usar SMS chat o WhatsApp
+        _comunicaciones.NotificarPorSMS("Nuevo empleado registrado");
+
+        // si es necesario, usar logger
+        _logger.LogearEstado("/app/empleados/log.txt", "Un nuevo empleado fue creado por { } ");
+
+        // si es necesario, usar signalR o websockets
+        _signalR.EnviarSeñal(); 
+        
+         */
+
+        return new RespuestaCrearEmpleado(); // construir este objeto de devolucion
+    }
+    public RespuestaModificarEmpleado ModificarEmpleado(SolicitudModificarEmpleado solicitud)
+    {
+        return this._dominio.ModificarEmpleado(solicitud);
+    }
+    #endregion
 }
 
+public interface IServicios
+{
+    RespuestaIniciarSesion IniciarSesion(SolicitudIniciarSesion solicitud);
+    RespuestaAbrirTurno AbrirTurno(SolicitudAbrirTurno solicitud);
+    RespuestaCerrarTurno CerrarTurno(SolicitudCerrarTurno solicitud);
+    RespuestaEnviarMensaje EnviarMensaje(SolicitudEnviarMensaje solicitud);
+    RespuestaAccionarMensaje AccionarMensaje(SolicitudAccionarMensaje solicitud);
 
+    public record SolicitudIniciarSesion();
+    public record RespuestaIniciarSesion();
 
-public record RespuestaCrearEmpleado();
-public record SolicitudCrearEmpleado();
-public record RespuestaEnviarMensaje();
-public record SolicitudEnviarMensaje();
+    public record SolicitudAbrirTurno();
+    public record RespuestaAbrirTurno();
+
+    public record SolicitudCerrarTurno();
+    public record RespuestaCerrarTurno();
+
+    public record RespuestaCrearEmpleado();
+    public record SolicitudCrearEmpleado();
+
+    public record RespuestaModificarEmpleado();
+    public record SolicitudModificarEmpleado();
+
+    public record RespuestaEnviarMensaje();
+    public record SolicitudEnviarMensaje();
+
+    public record RespuestaAccionarMensaje();
+    public record SolicitudAccionarMensaje();
+}

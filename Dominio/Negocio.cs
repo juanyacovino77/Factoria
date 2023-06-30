@@ -41,7 +41,6 @@
         public Mensaje AñadirEmpleado(Trabajador empleado)
         {
             throw new NotImplementedException();
-
         }
 
         public Mensaje AñadirSector(Sector sector)
