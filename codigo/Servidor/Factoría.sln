@@ -15,8 +15,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Servidor", "Servidor", "{3C
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Cliente", "Cliente", "{AD9A8292-A01D-4751-939F-94A49A12FC28}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnoChat.Client.Console", "..\..\..\Desktop\Uno.Samples-master\UI\ChatSignalR\UnoChat.Client.Console\UnoChat.Client.Console.csproj", "{E2AC3F34-32AC-4D25-8325-B39C9FE49093}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,10 +37,6 @@ Global
 		{60CA697F-7256-4F1F-9A12-EC1AF0219000}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{60CA697F-7256-4F1F-9A12-EC1AF0219000}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{60CA697F-7256-4F1F-9A12-EC1AF0219000}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E2AC3F34-32AC-4D25-8325-B39C9FE49093}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E2AC3F34-32AC-4D25-8325-B39C9FE49093}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E2AC3F34-32AC-4D25-8325-B39C9FE49093}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E2AC3F34-32AC-4D25-8325-B39C9FE49093}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -52,7 +46,6 @@ Global
 		{8D16E7FC-9C93-4B87-B042-627A6DD7125B} = {3C80F1A1-D1AF-47A0-BC1C-B95D6AA2CE74}
 		{3649D4EF-1E1F-4B4C-8581-C16C2683C811} = {3C80F1A1-D1AF-47A0-BC1C-B95D6AA2CE74}
 		{60CA697F-7256-4F1F-9A12-EC1AF0219000} = {3C80F1A1-D1AF-47A0-BC1C-B95D6AA2CE74}
-		{E2AC3F34-32AC-4D25-8325-B39C9FE49093} = {AD9A8292-A01D-4751-939F-94A49A12FC28}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FE7F9412-3745-4BB4-9EC2-4D84BB91F6ED}
