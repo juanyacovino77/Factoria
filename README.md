@@ -1,1 +1,1 @@
-# logica_del_dominio
+# Sistema Coordinante de Actividades
