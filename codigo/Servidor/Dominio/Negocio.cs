@@ -17,19 +17,36 @@
          * servicio de otra capa por constructor o usando MediatR
          * 
          */
+        public List<Trabajador> empleados { get; set; }
 
+        public Negocio()
+        {
+            // especificar empleados
+            empleados = new List<Trabajador>
+            {
+                new Trabajador("1", "juan", new Sector()),
+                new Trabajador("2", "eugenia", new Sector()),
+                new Trabajador("3", "octavio", new Sector())
+            };
+        }
 
         #region IMPLEMENTACION DEL CONTRATO QUE CONSUMEN OBJETOS DEL DOMINIO
-        public Trabajador ObtenerEmpleadoPorId(int id)
+        public Trabajador ObtenerEmpleadoPorId(string id)
+        {
+            return this.empleados.Find(e => e.dni == id);
+
+        }
+        
+        public List<Trabajador> ObtenerEmpleadosPorId(List<int> ids)
         {
             throw new NotImplementedException();
 
         }
 
-        public List<Trabajador> ObtenerEmpleadosPorId(List<int> ids)
+        public List<Trabajador> ObtenerEmpleadosActivos()
         {
+            // logica de obtener empleados filtrando por EnTurno = true;
             throw new NotImplementedException();
-
         }
 
         public Sector ObtenerSectorPorId(int id)

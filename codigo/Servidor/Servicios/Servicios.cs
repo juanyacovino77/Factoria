@@ -1,5 +1,6 @@
 ﻿using dominio;
 using static puertos.IServicios;
+using Nelibur.ObjectMapper;
 namespace puertos;
 
 
@@ -50,25 +51,30 @@ public class Servicios : IServicios
 { // esto tendria que ser un singleton
     private IDominio _dominio { get; set; } // segregar esta interfaz
 
-
     public Servicios()
     {
         _dominio = new Puerto(); // interior Puerto AL dominio, puerto HACIA el dominio; -in, -ex
     }
 
-    #region CASOS DE USO MENSAJERIA - Metodos consumidos por API SIGNALR - empleado-empleado
+    #region CASOS DE USO MENSAJERIA - Metodos consumidos por API SIGNALR - APP POC - empleado-empleado
     public RespuestaIniciarSesion IniciarSesion(SolicitudIniciarSesion solicitud)
     {
-        var respuesta = this._dominio.IniciarSesion(solicitud);
-        // aca vuelve toda la info del objeto empleado
-        return new RespuestaIniciarSesion();
+
+        //Mapear IServicios.SolicitudIniciarSesion -> IDominio.SolicitudIniciarSesion
+        //Mapear IDominio.RespuestaIniciarSesion -> IServicios.RespuestaIniciarSesion
+
+        var respuestaDelDominio = this._dominio.IniciarSesion(solicitud.idEmpleado);
+
+        
+
+        return Mapear(respuestaDelDominio);
     }
     public RespuestaAbrirTurno AbrirTurno(SolicitudAbrirTurno solicitud)
     {
         var respuesta = this._dominio.AbrirTurno(solicitud);
 
         return respuesta;
-        
+
     }
     public RespuestaCerrarTurno CerrarTurno(SolicitudCerrarTurno solicitud)
     {
@@ -108,13 +114,13 @@ public class Servicios : IServicios
     }
     #endregion
 
-    #region CASOS DE USO CRUD - Metodos consumidos por API REST - administrador-empleados
+    #region CASOS DE USO CRUD - Metodos consumidos por API REST - APP BACKOFFICE - administrador-empleados
     public RespuestaCrearEmpleado CrearEmpleado(SolicitudCrearEmpleado solicitud)
     {
         // mapear dto exterior con dto interior
         // y mandar el dto de dominio 
 
-        var respuesta = _dominio.CrearEmpleado(solicitud, solicitud);
+        var respuesta = _dominio.CrearEmpleado(solicitud);
 
         /*
          
@@ -139,6 +145,56 @@ public class Servicios : IServicios
         return this._dominio.ModificarEmpleado(solicitud);
     }
     #endregion
+
+    private IServicios.RespuestaIniciarSesion Mapear(IDominio.RespuestaIniciarSesion entrada)
+    {
+        var e = entrada.empleado;
+        var m = new List<IServicios.Mensaje>();
+
+        foreach (var t in e.turnos)
+        {
+            var msjs = t.mensajesEnviados;
+            msjs.AddRange(t.mensajesRecibidos);
+
+            var msj_enviados = msjs.Select(m => new IServicios.Mensaje
+            {
+                idMensaje = m.codigo,
+                descripcionMensaje = "a",
+                idAsunto = 1,
+                idEstado = 2,
+                emisor = new IServicios.Empleado
+                {
+                    idEmpleado = 1,
+                    nombreEmpleado = "alguien",
+                    idSector = 2,
+                    nombreSector = "algun",
+                    mensajes = null
+                }
+            });
+            m.AddRange(msj_enviados);
+        }
+
+        return new IServicios.RespuestaIniciarSesion
+        { 
+             mensaje= e is not null ? "aprobado" : "denegado",
+             exito= e is not null ? true : false,
+             empleado= new Empleado 
+             {
+                 idEmpleado = Convert.ToInt16(e.dni),
+                 nombreEmpleado = e.nombre,
+                 idSector= e.seccion.codigo,
+                 nombreSector= e.seccion.descripcion,
+                 mensajes= m.ToArray() 
+             }
+        };
+    }
+
+    private TSalida Mapear<TEntrada, TSalida>(TEntrada entrada)
+    {
+        TinyMapper.Bind<TEntrada, TSalida>();
+
+        return TinyMapper.Map<TSalida>(entrada);
+    }
 }
 
 public interface IServicios
@@ -149,8 +205,48 @@ public interface IServicios
     RespuestaEnviarMensaje EnviarMensaje(SolicitudEnviarMensaje solicitud);
     RespuestaAccionarMensaje AccionarMensaje(SolicitudAccionarMensaje solicitud);
 
-    public record SolicitudIniciarSesion();
-    public record RespuestaIniciarSesion();
+    public class SolicitudIniciarSesion
+    {
+        public string idEmpleado { get; set; }
+    }
+
+    public class RespuestaIniciarSesion
+    {
+        public string mensaje { get; set; }
+        public bool exito { get; set; }
+        public Empleado empleado { get; set; }
+    }
+
+    public class Empleado
+    {
+        public int idEmpleado { get; set; }
+        public string nombreEmpleado { get; set; }
+        public int idSector { get; set; }
+        public string nombreSector { get; set; }
+        public Mensaje[]? mensajes { get; set; }
+
+    }
+
+    public class Mensaje
+    {
+        public int idMensaje { get; set; }
+        public string descripcionMensaje { get; set; }
+        public int idAsunto { get; set; }
+        public int idEstado { get; set; }
+        public Empleado emisor { get; set; }
+    }
+
+    public class SolicitudEnviarMensaje
+    {
+        public Mensaje mensaje { get; set; }
+    }
+
+    public class RespuestaEnviarMensaje
+    {
+        public string respuesta { get; set; }
+        public bool exito { get; set; }
+        public Mensaje mensaje { get; set; }
+    }
 
     public record SolicitudAbrirTurno();
     public record RespuestaAbrirTurno();
@@ -164,8 +260,8 @@ public interface IServicios
     public record RespuestaModificarEmpleado();
     public record SolicitudModificarEmpleado();
 
-    public record RespuestaEnviarMensaje();
-    public record SolicitudEnviarMensaje();
+    //public record RespuestaEnviarMensaje();
+    //public record SolicitudEnviarMensaje();
 
     public record RespuestaAccionarMensaje();
     public record SolicitudAccionarMensaje();

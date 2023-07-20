@@ -9,15 +9,15 @@ namespace dominio
             this.nombre = nombre;
             this.seccion = sector;
             this.enTurno = false;
-            this.turnos = new List<Turno>();
+            this.turnos = new List<Turno> { new Turno() };
         }
 
-        protected string nombre { get; set; }
-        protected string dni { get; set; }
+        public string nombre { get; set; }
+        public string dni { get; set; }
         protected bool enTurno { get; set; }
-        protected Sector seccion { get; set; }
-        protected List<Turno> turnos { get; set; }
-
+        public Sector seccion { get; set; }
+        public List<Turno> turnos { get; set; }
+        
 
         public virtual Mensaje EnviarMensajeAlMensajero(Mensaje msj)
         {

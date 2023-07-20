@@ -1,4 +1,6 @@
-﻿namespace dominio
+﻿using static dominio.IDominio;
+
+namespace dominio
 {
 
     public class Puerto : IDominio
@@ -19,16 +21,25 @@
         }
 
 
-        public dynamic IniciarSesion(dynamic solicitud)
+        public RespuestaIniciarSesion IniciarSesion(string claveEmpleado)
         {
-            // existe el empleado?
-            var actor = _negocio.ObtenerEmpleadoPorId(solicitud.actor.id);
+            //Descomponer y usar IDominio.SolicitudIniciarSesion
+            //Recomponer y devolver IDominio.RespuestaIniciarSesion
 
-            // si existe, le devolve su informacion
+            // existe el empleado?
+            var actor = _negocio.ObtenerEmpleadoPorId(claveEmpleado);
+
+            /*
+            var empleadosActivos = _negocio.ObtenerEmpleadosActivos();
+
+            // si existe, le devolve su informacion y otras cosas 
+            // como inforamcion de los empleados activos en otros sectores
             return actor is null
                 ? new { auth = "No sos empleado" }
-                : new { auth = "Correcto", empleado = actor };
+                : new { auth = "Correcto", empleado = actor, activos = empleadosActivos };
+            */
 
+            return new RespuestaIniciarSesion(actor);
         }
         public dynamic AbrirTurno(dynamic solicitud)
         {
@@ -77,7 +88,7 @@
             // si quiere modificar info sensible como el sector? no puede.. (solo admin)
             // o solo puede modificar cualquier info del empleado un admin
 
-            var empleado = _negocio.ObtenerEmpleadoPorId(actor.id) as Administrador;
+            var empleado = _negocio.ObtenerEmpleadoPorId(solicitud.id) as Administrador;
             var empleado_a_modificar = _negocio.ObtenerEmpleadoPorId(solicitud.id) as Trabajador;
 
             // Autenticar al empleado. ¿Existe el empleado?
@@ -168,20 +179,23 @@
         }
 
 
-        
 
 
     }
 
     public interface IDominio
     {
-        dynamic IniciarSesion(dynamic solicitud);
+        RespuestaIniciarSesion IniciarSesion(string claveEmpleado);
         dynamic AbrirTurno(dynamic solicitud);
         dynamic CerrarTurno(dynamic solicitud);
         dynamic CrearEmpleado(dynamic solicitud);
         dynamic ModificarEmpleado(dynamic solicitud);
         dynamic EnviarMensaje(dynamic solicitud);
         dynamic AccionarMensaje(dynamic solicitud);
+
+
+        public record RespuestaIniciarSesion(Trabajador? empleado);
+
     }
 
 }

@@ -1,6 +1,6 @@
 ﻿using API.Hubs.PuertoDeEntrada;
 using Microsoft.AspNetCore.SignalR;
-using puertos;
+
 
 namespace API.Hubs.PuertoDeSalida
 {
@@ -22,9 +22,9 @@ namespace API.Hubs.PuertoDeSalida
 
 
 
-        public void DespacharMensajeAClientes(SolicitudEnviarMensaje solicitud)
+        public void DespacharMensajeAClientes(dynamic solicitud)
         {
-            _hubContext.Clients.All.SendAsync("RecibirNuevoMensaje", solicitud);
+            //_hubContext.Clients.All.SendAsync("RecibirNuevoMensaje", solicitud);
         }
     }
 }
