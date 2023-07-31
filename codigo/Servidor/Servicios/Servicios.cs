@@ -1,6 +1,5 @@
 ﻿using dominio;
 using static puertos.IServicios;
-using Nelibur.ObjectMapper;
 namespace puertos;
 
 
@@ -59,15 +58,21 @@ public class Servicios : IServicios
     #region CASOS DE USO MENSAJERIA - Metodos consumidos por API SIGNALR - APP POC - empleado-empleado
     public RespuestaIniciarSesion IniciarSesion(SolicitudIniciarSesion solicitud)
     {
-
-        //Mapear IServicios.SolicitudIniciarSesion -> IDominio.SolicitudIniciarSesion
-        //Mapear IDominio.RespuestaIniciarSesion -> IServicios.RespuestaIniciarSesion
-
         var respuestaDelDominio = this._dominio.IniciarSesion(solicitud.idEmpleado);
 
-        
+        if(respuestaDelDominio.empleado.Count == 0) 
+            return new IServicios.RespuestaIniciarSesion
+            { 
+                empleado= new List<Empleado>(),
+                exito= false,
+                mensaje= "No existe tu clave de empleado"
+            };
 
-        return Mapear(respuestaDelDominio);
+        var b = Mapear(respuestaDelDominio);
+            b.exito = true;
+            b.mensaje = "exito";
+
+        return b;
     }
     public RespuestaAbrirTurno AbrirTurno(SolicitudAbrirTurno solicitud)
     {
@@ -146,9 +151,10 @@ public class Servicios : IServicios
     }
     #endregion
 
+    
     private IServicios.RespuestaIniciarSesion Mapear(IDominio.RespuestaIniciarSesion entrada)
     {
-        var e = entrada.empleado;
+        var e = entrada.empleado[0];
         var m = new List<IServicios.Mensaje>();
 
         foreach (var t in e.turnos)
@@ -175,26 +181,24 @@ public class Servicios : IServicios
         }
 
         return new IServicios.RespuestaIniciarSesion
-        { 
-             mensaje= e is not null ? "aprobado" : "denegado",
-             exito= e is not null ? true : false,
-             empleado= new Empleado 
-             {
-                 idEmpleado = Convert.ToInt16(e.dni),
-                 nombreEmpleado = e.nombre,
-                 idSector= e.seccion.codigo,
-                 nombreSector= e.seccion.descripcion,
-                 mensajes= m.ToArray() 
-             }
+        {
+            mensaje = e is not null ? "aprobado" : "denegado",
+            exito = e is not null ? true : false,
+            empleado = new List<IServicios.Empleado> 
+            { 
+                new IServicios.Empleado
+                {
+                    idEmpleado = Convert.ToInt16(e),
+                    nombreEmpleado = e.nombre,
+                    idSector = e.seccion.codigo,
+                    nombreSector = e.seccion.descripcion,
+                    mensajes = m.ToArray()
+                } 
+            }
         };
     }
+    
 
-    private TSalida Mapear<TEntrada, TSalida>(TEntrada entrada)
-    {
-        TinyMapper.Bind<TEntrada, TSalida>();
-
-        return TinyMapper.Map<TSalida>(entrada);
-    }
 }
 
 public interface IServicios
@@ -205,16 +209,18 @@ public interface IServicios
     RespuestaEnviarMensaje EnviarMensaje(SolicitudEnviarMensaje solicitud);
     RespuestaAccionarMensaje AccionarMensaje(SolicitudAccionarMensaje solicitud);
 
+    
     public class SolicitudIniciarSesion
     {
         public string idEmpleado { get; set; }
     }
 
+    
     public class RespuestaIniciarSesion
     {
         public string mensaje { get; set; }
         public bool exito { get; set; }
-        public Empleado empleado { get; set; }
+        public List<Empleado> empleado { get; set; }
     }
 
     public class Empleado
@@ -224,7 +230,6 @@ public interface IServicios
         public int idSector { get; set; }
         public string nombreSector { get; set; }
         public Mensaje[]? mensajes { get; set; }
-
     }
 
     public class Mensaje
@@ -233,8 +238,10 @@ public interface IServicios
         public string descripcionMensaje { get; set; }
         public int idAsunto { get; set; }
         public int idEstado { get; set; }
-        public Empleado emisor { get; set; }
+        public Empleado? emisor { get; set; }
+        public Empleado[]? receptores { get; set; }
     }
+    
 
     public class SolicitudEnviarMensaje
     {
@@ -260,8 +267,6 @@ public interface IServicios
     public record RespuestaModificarEmpleado();
     public record SolicitudModificarEmpleado();
 
-    //public record RespuestaEnviarMensaje();
-    //public record SolicitudEnviarMensaje();
 
     public record RespuestaAccionarMensaje();
     public record SolicitudAccionarMensaje();

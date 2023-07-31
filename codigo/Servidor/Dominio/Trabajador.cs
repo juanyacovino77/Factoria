@@ -18,7 +18,10 @@ namespace dominio
         public Sector seccion { get; set; }
         public List<Turno> turnos { get; set; }
         
-
+        public List<Mensaje> ObtenerMensajes()
+        {
+            return this.turnos.First().mensajesRecibidos;
+        }
         public virtual Mensaje EnviarMensajeAlMensajero(Mensaje msj)
         {
             //var mensaje_de_vuelta = negocio.RecibirMensajeDeEmpleado(msj);

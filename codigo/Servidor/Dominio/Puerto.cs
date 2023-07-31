@@ -23,23 +23,16 @@ namespace dominio
 
         public RespuestaIniciarSesion IniciarSesion(string claveEmpleado)
         {
-            //Descomponer y usar IDominio.SolicitudIniciarSesion
-            //Recomponer y devolver IDominio.RespuestaIniciarSesion
-
             // existe el empleado?
-            var actor = _negocio.ObtenerEmpleadoPorId(claveEmpleado);
+            var empleado = _negocio.ObtenerEmpleadoPorId(claveEmpleado);
 
-            /*
-            var empleadosActivos = _negocio.ObtenerEmpleadosActivos();
+            if (empleado is null) return new RespuestaIniciarSesion(new List<Trabajador>());
 
-            // si existe, le devolve su informacion y otras cosas 
-            // como inforamcion de los empleados activos en otros sectores
-            return actor is null
-                ? new { auth = "No sos empleado" }
-                : new { auth = "Correcto", empleado = actor, activos = empleadosActivos };
-            */
+            //var jornada = _negocio.ObtenerEmpleadosActivos(); // en negocio se puede filtrar la info que devuelve.
 
-            return new RespuestaIniciarSesion(actor);
+            //ornada.Add(empleado);
+
+            return new RespuestaIniciarSesion(new List<Trabajador>());
         }
         public dynamic AbrirTurno(dynamic solicitud)
         {
@@ -194,7 +187,7 @@ namespace dominio
         dynamic AccionarMensaje(dynamic solicitud);
 
 
-        public record RespuestaIniciarSesion(Trabajador? empleado);
+        public record RespuestaIniciarSesion(List<Trabajador> empleado); // Si la lista es vacia, no inició sesion
 
     }
 

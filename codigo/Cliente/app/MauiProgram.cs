@@ -12,7 +12,7 @@ namespace app
             var builder = MauiApp.CreateBuilder();
 
             builder
-                .UseMauiReactorApp<Inicio>(app =>
+                .UseMauiReactorApp<Tablero>(app =>
                 {
                     app.AddResource("Resources/Styles/Colors.xaml");
                     app.AddResource("Resources/Styles/Styles.xaml");
@@ -30,7 +30,7 @@ namespace app
                     fonts.AddFont("OpenSans-SemiBold.ttf", "OpenSansSemiBold");
                 });
 
-            builder.Services.AddSingleton<Servicios.Servicios>();
+            builder.Services.AddSingleton<Servicios.Servidor>();
 
             return builder.Build();
 

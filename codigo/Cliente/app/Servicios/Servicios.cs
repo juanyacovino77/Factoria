@@ -6,35 +6,62 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace app.Servicios
-{ 
-    public class Servicios
-    {
-        public HubConnection _conexion;
+namespace app.Servicios;
 
-        public Servicios() {
-            _conexion = new HubConnectionBuilder()
-                .WithUrl(new Uri("https://localhost:7186/Mensajeria"))
-                .Build();
+public class Servidor
+{
+    public HubConnection _conexion;
+    public event EventHandler<Contratos.Mensaje>? MensajeRecibido;
+    public event EventHandler<string>? EmpleadoConectado;
 
-            _conexion.Closed += async (error) =>
-            {
-                await Task.Delay(new Random().Next(0, 5) * 1000);
-                await _conexion.StartAsync();
-            };
 
-        }
+    public Servidor() {
+        _conexion = new HubConnectionBuilder()
+            .WithUrl(new Uri("http://192.168.0.112:7186/Mensajeria"))
+            .Build();
 
-        public async Task<RespuestaIniciarSesion> IniciarSesion(string clave)
+        _conexion.On<Contratos.Mensaje>("RecibirNuevoMensaje", (msj) =>
         {
+            MensajeRecibido?.Invoke(this, msj);
+        });
+
+        _conexion.On<string>("SeConectoEmpleado", (msj) =>
+        {
+            EmpleadoConectado?.Invoke(this, msj);
+        });
+
+        IniciarConexion();
+
+        /*
+        _conexion.Closed += async (error) =>
+        {
+            await Task.Delay(new Random().Next(0, 5) * 1000);
             await _conexion.StartAsync();
+        };
+        */
 
-            var respuesta = await _conexion.InvokeAsync<RespuestaIniciarSesion>
-                                        ("IniciarSesion", new SolicitudIniciarSesion { idEmpleado=clave });
 
-            await _conexion.DisposeAsync();
+    }
 
-            return respuesta;
-        }
+    private async void IniciarConexion()
+    {
+        await _conexion.StartAsync();
+    }
+
+    public async Task<RespuestaIniciarSesion> IniciarSesion(string clave)
+    {
+
+        var respuesta = await _conexion.InvokeAsync<RespuestaIniciarSesion>
+                                    ("IniciarSesion", new SolicitudIniciarSesion { idEmpleado=clave });
+        return respuesta;
+    }
+
+    public async Task<RespuestaEnviarMensaje> EnviarMensaje(SolicitudEnviarMensaje solicitud)
+    {
+
+        var respuesta = await _conexion.InvokeAsync<RespuestaEnviarMensaje>
+                                    ("EnviarMensaje", new SolicitudEnviarMensaje { mensaje = solicitud.mensaje });
+
+        return respuesta;
     }
 }

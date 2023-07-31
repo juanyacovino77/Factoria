@@ -30,13 +30,22 @@ public class MensajeriaHub : Hub
         _servicios = new Servicios();
     }
 
+    public override async Task OnConnectedAsync()
+    {
+        await Clients.All.SendAsync("SeConectoEmpleado", $"user id:  {Context.UserIdentifier}, connection id: {Context.ConnectionId}");
+
+        await base.OnConnectedAsync();
+    }
+
     public async Task<RespuestaIniciarSesion> IniciarSesion(SolicitudIniciarSesion solicitud)
     {
+        
         var solicitudParaServicio = Mapear<Contratos.SolicitudIniciarSesion, IServicios.SolicitudIniciarSesion>(solicitud);
 
         var respuestaDeServicio = _servicios.IniciarSesion(solicitudParaServicio);
 
         var respuestaParaCliente = Mapear<IServicios.RespuestaIniciarSesion, Contratos.RespuestaIniciarSesion>(respuestaDeServicio);
+        
 
         await Clients.All.SendAsync("RecibirNotificacionEmpleadoConectado", respuestaParaCliente);
 
@@ -45,16 +54,20 @@ public class MensajeriaHub : Hub
 
     public async Task<RespuestaEnviarMensaje> EnviarMensaje(SolicitudEnviarMensaje solicitud)
     {
+        /*
         var solicitudParaServicio = Mapear<Contratos.SolicitudEnviarMensaje, IServicios.SolicitudEnviarMensaje>(solicitud);
 
         var respuestaDeServico = _servicios.EnviarMensaje(solicitudParaServicio);
 
         var respuestaParaCliente = Mapear<IServicios.RespuestaEnviarMensaje, Contratos.RespuestaEnviarMensaje>(respuestaDeServico);
+        */
 
         // logica de reenvio de mensajes a los clientes, segun id, grupo, sector, etc
-        await Clients.All.SendAsync("RecibirNuevoMensaje", respuestaParaCliente);
+        
 
-        return respuestaParaCliente;
+        await Clients.All.SendAsync("RecibirNuevoMensaje", solicitud.mensaje);
+
+        return new RespuestaEnviarMensaje() { exito=true, respuesta="enviado", mensaje=null };
     }
 
     public static TSalida Mapear<TEntrada, TSalida>(TEntrada entrada)

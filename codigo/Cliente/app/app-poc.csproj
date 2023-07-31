@@ -39,9 +39,9 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.8" />
-    <PackageReference Include="Reactor.Maui" Version="1.0.137" />
-    <PackageReference Include="Reactor.Maui.Canvas" Version="1.0.137" />
-    <PackageReference Include="Reactor.Maui.ScaffoldGenerator" Version="1.0.137" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Reactor.Maui" Version="1.0.139" />
+    <PackageReference Include="Reactor.Maui.Canvas" Version="1.0.139" />
+    <PackageReference Include="Reactor.Maui.ScaffoldGenerator" Version="1.0.139" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
 
   </ItemGroup>
