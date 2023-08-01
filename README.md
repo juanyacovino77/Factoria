@@ -1,8 +1,6 @@
 # __Sistema Coordinante de Actividades__
 
-{ insertar diagrama ilustrativo }
-
-![prueba](concepto.drawio.png)
+![sectores](concepto.drawio.png)
 
 ## __Descripción:__
 
