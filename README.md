@@ -34,7 +34,7 @@ Durante su turno, el empleado debe ir realizando sus tareas y respondiendo los m
 
   ### Diagramas de clases de diseño:
   
-    ![dominio](/diagramas/dominio.drawio.svg)
+  ![dominio](/diagramas/dominio.drawio.svg)
     
   ### Diagramas de secuencia
     { insertar diagrama de secuencia }
