@@ -1,6 +1,7 @@
 # __Sistema Coordinante de Actividades__
 
-![sectores](concepto.drawio.png)
+![sectores](concepto.drawio.svg)
+
 
 ## __Descripción:__
 
