@@ -2,7 +2,7 @@
 
 { insertar diagrama ilustrativo }
 
-![prueba](Untitled%20Diagram.drawio.svg)
+![prueba](concepto.drawio.png)
 
 ## __Descripción:__
 
