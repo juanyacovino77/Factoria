@@ -1,15 +1,15 @@
-# Sistema Coordinante de Actividades
+# __Sistema Coordinante de Actividades__
 
 { insertar diagrama ilustrativo }
 
-## Problema:
+## __Descripción:__
 
 Una cadena de autoservicios tiene varias sucursales distribuidas por la ciudad donde cada sucursal tiene distintos sectores de trabajo como ser caja, balanza, cocina, carniceria, pnaderia, depósito y administración en donde varios empleados trabajan en cada sector. 
 Se desea implementar un sistema gestor de actividades que ayude a administrar, controlar, trazar las tareas que se llevan a cabo en cada sector y entre sectores. Es decir, un sistema orquestador de actividades que facilite la traza de los procesos productivos del negocio y abra la comunicación entre los sectores.
 Para esto se propone la instalación de un Punto de Contacto (POC) en cada sector, una máquina funcionalmente análoga a un Punto de Venta (POS), puede ser una computadora, una tableta o un celular, con la que los empleados interactúen durante su turno. 
 Se pretende que los empleados, utilizando un POC, puedan abrir y cerrar su turno, operar su panel de control, recibir mensajes, tareas y notificaciones desde otros sectores y tomar acción sobre estos mensajes según sea requerido. 
 
-## Descripción:
+## __Problema:__ 
 
 Se desea implementar un sistema cliente/servidor en el que la pantalla principal de la aplicación cliente es la que tenga la lista de mensajes del sector. El panel de control de un empleado es una pantalla a la que el empleado puede navegar que le permite controlar información personal y completar documentos durante su turno a la que solo puede acceder con su clave de acceso. Estos documentos pueden ser formularios que se «concilian» al cerrar el turno de modo análogo como se hace un «cierre de caja» o un «arqueo de caja» en un Punto de Venta del sector Caja.
 
@@ -19,24 +19,24 @@ Cuando un empleado arriba al sector de trabajo listo para iniciar su jornada lab
 Durante su turno, el empleado debe ir realizando sus tareas y respondiendo los mensajes, marcar tareas como realizadas, en realización, suspendidas, dar razones, enviar mensajes urgentes, marcar notificaciones como recibidas
 
 
-## Requerimientos funcionales:
+## __Requerimientos funcionales:__
 
-## Requerimientos no funcionales:
+## __Requerimientos no funcionales:__
 
-## Actores:
+## __Actores:__
 
-## Casos de uso:
+## __Casos de uso:__
 
 { insertar diagrama de casos de uso } 
 
-## Modelo del Dominio - Reglas del negocio
+## __Modelo del Dominio - Reglas del negocio__
 
   ### Diagramas de clases de diseño:
     { insetar diagrama de clases }
   ### Diagramas de secuencia
     { insertar diagrama de secuencia }
 
-## Arquitectura del software - capas -> Cliente - Servidor:
+## __Arquitectura del software - capas -> Cliente - Servidor:__
 
   { insertar diagrama de la arquitectura }
 
