@@ -50,10 +50,10 @@ public class Receta
 public class Mensaje
 {
     public int idMensaje { get; set; }
-    public string descripcionMensaje { get; set; }
-    public int idAsunto { get; set; }
-    public int idEstado { get; set; }
-    public object cuerpo { get; set; } 
+    public string notaMensaje { get; set; }
+    public Tareas? tareas { get; set; }
+    public Receta? receta { get; set; }
+    public Notificacion? notificacion { get; set; }
     public Empleado emisor { get; set; }
 }
 

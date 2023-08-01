@@ -31,9 +31,6 @@ public class Program
 
         app.MapRazorPages();
         app.MapHub<MensajeriaHub>("/Mensajeria");
-
-
-
         app.Run();
     }
 }

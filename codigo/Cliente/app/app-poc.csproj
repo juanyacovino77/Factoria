@@ -46,6 +46,6 @@
 
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Servidor\Contratos\Contratos.csproj" />
+    <ProjectReference Include="..\..\Contratos\Contratos.csproj" />
   </ItemGroup>
 </Project>

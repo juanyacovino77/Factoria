@@ -30,11 +30,16 @@ public class MensajeriaHub : Hub
         _servicios = new Servicios();
     }
 
-    public override async Task OnConnectedAsync()
+    public override Task OnConnectedAsync()
     {
-        await Clients.All.SendAsync("SeConectoEmpleado", $"user id:  {Context.UserIdentifier}, connection id: {Context.ConnectionId}");
+        Console.WriteLine($"se conecto {Context.ConnectionId}");
+        return base.OnConnectedAsync();
+    }
 
-        await base.OnConnectedAsync();
+    public override Task OnDisconnectedAsync(Exception? exception)
+    {
+        Console.WriteLine($"se desconecto {Context.ConnectionId}", exception);
+        return base.OnDisconnectedAsync(exception);
     }
 
     public async Task<RespuestaIniciarSesion> IniciarSesion(SolicitudIniciarSesion solicitud)

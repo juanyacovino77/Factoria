@@ -12,7 +12,7 @@ namespace app
             var builder = MauiApp.CreateBuilder();
 
             builder
-                .UseMauiReactorApp<Tablero>(app =>
+                .UseMauiReactorApp<pantallaTablero>(app =>
                 {
                     app.AddResource("Resources/Styles/Colors.xaml");
                     app.AddResource("Resources/Styles/Styles.xaml");
