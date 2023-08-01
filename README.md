@@ -1,6 +1,6 @@
 # __Sistema Coordinante de Actividades__
 
-![sectores](concepto.drawio.svg)
+![sectores](/diagramas/concepto.drawio.svg)
 
 
 ## __Descripción:__
@@ -33,13 +33,15 @@ Durante su turno, el empleado debe ir realizando sus tareas y respondiendo los m
 ## __Modelo del Dominio - Reglas del negocio__
 
   ### Diagramas de clases de diseño:
-    { insetar diagrama de clases }
+  
+    ![dominio](/diagramas/dominio.drawio.svg)
+    
   ### Diagramas de secuencia
     { insertar diagrama de secuencia }
 
 ## __Arquitectura del software - capas -> Cliente - Servidor:__
 
-  { insertar diagrama de la arquitectura }
+  ![arquitectura](/diagramas/arquitectura.drawio.svg)
 
 
 
