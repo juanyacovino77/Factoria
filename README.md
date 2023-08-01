@@ -2,6 +2,8 @@
 
 { insertar diagrama ilustrativo }
 
+![prueba](Untitled%20Diagram.drawio.svg)
+
 ## __Descripción:__
 
 Una cadena de autoservicios tiene varias sucursales distribuidas por la ciudad donde cada sucursal tiene distintos sectores de trabajo como ser caja, balanza, cocina, carniceria, pnaderia, depósito y administración en donde varios empleados trabajan en cada sector. 
