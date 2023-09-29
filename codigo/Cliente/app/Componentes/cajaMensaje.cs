@@ -1,4 +1,5 @@
-﻿using MauiReactor;
+﻿using Contratos;
+using MauiReactor;
 using MauiReactor.Shapes;
 using System;
 using System.Collections.Generic;
@@ -10,12 +11,9 @@ namespace app.Componentes;
 
 public class cajaMensaje : Component
 {
-    private string _titulo;
-    private string _nombreEmisor;
-    private string _descripcion;
-    public cajaMensaje Titulo(string titulo) { _titulo = titulo; return this; }
-    public cajaMensaje NombreEmisor(string nombre) { _nombreEmisor = nombre; return this; }
-    public cajaMensaje Descripcion(string descrp) { _descripcion = descrp; return this; }
+    private Mensaje _mensaje;
+
+    public cajaMensaje Mensaje(Mensaje mensaje) { _mensaje = mensaje; return this; }
 
 
     public override VisualNode Render()
@@ -24,28 +22,43 @@ public class cajaMensaje : Component
 
             new Border()
             {
-                new Grid("*,*,*","*")
+                new Grid("*,*,*","100,*")
                 {
-                    new Label($"NUEVO MENSAJE RECIBIDO")
+                    new Image("icono_mensaje.png")
+
+                        .Margin(5,5,0,0)
+                        .GridRowSpan(2)
+                        .VCenter()
+                        ,
+
+                    new Label($"MENSAJE RECIBIDO")
                         .TextColor(Colors.Black)
                         .Padding(5)
+                        .HStart()
+                        .GridRow(0)
+                        .GridColumn(1)
                         ,
 
-                    new Label($"De: {_nombreEmisor}")
+                    new Label($"De: {_mensaje.emisor.nombreEmpleado.ToUpper() } del sector {_mensaje.emisor?.nombreSector.ToUpper()} ")
                         .GridRow(1)
                         .Padding(5)
+                        .GridColumn(1)
                         ,
 
-                    new Label($"Descripcion: {_descripcion}")
+                    new Label($"Descripcion: {_mensaje.notaMensaje}")
                         .GridRow(2)
                         .Padding(5)
+                        .GridColumn(1)
                 }
             }
-            .Padding(10)
-            .Stroke(MauiControls.Brush.Chocolate)
-            .StrokeThickness(2)
-            .BackgroundColor(Colors.Orange)
-            .StrokeShape(new RoundRectangle().CornerRadius(15, 15, 15, 15));
+            
+            .Shadow(new Shadow())
+            .StrokeCornerRadius(30, 15, 15, 30)
+            .Padding(5)
+            .Margin(10,10,15,3)
+            .Stroke(MauiControls.Brush.CadetBlue)
+            .StrokeThickness(3)
+            .BackgroundColor(Colors.LightSkyBlue);
 
     }
 }

@@ -38,11 +38,17 @@
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="Resources\Images\icono_mensaje.png" />
+    <None Remove="Resources\Images\icono_mensaje2.jpg" />
+    <None Remove="Resources\Images\icono_mensaje3.png" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.8" />
     <PackageReference Include="Reactor.Maui" Version="1.0.139" />
     <PackageReference Include="Reactor.Maui.Canvas" Version="1.0.139" />
     <PackageReference Include="Reactor.Maui.ScaffoldGenerator" Version="1.0.139" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
+    <PackageReference Include="Syncfusion.Maui.Popup" Version="22.2.7" />
 
   </ItemGroup>
   <ItemGroup>

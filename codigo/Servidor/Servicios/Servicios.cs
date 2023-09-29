@@ -1,4 +1,5 @@
 ﻿using dominio;
+using Riok.Mapperly.Abstractions;
 using static puertos.IServicios;
 namespace puertos;
 
@@ -60,19 +61,12 @@ public class Servicios : IServicios
     {
         var respuestaDelDominio = this._dominio.IniciarSesion(solicitud.idEmpleado);
 
-        if(respuestaDelDominio.empleado.Count == 0) 
-            return new IServicios.RespuestaIniciarSesion
-            { 
-                empleado= new List<Empleado>(),
-                exito= false,
-                mensaje= "No existe tu clave de empleado"
-            };
-
-        var b = Mapear(respuestaDelDominio);
-            b.exito = true;
-            b.mensaje = "exito";
-
-        return b;
+        return new RespuestaIniciarSesion
+        {
+            empleado = respuestaDelDominio.empleado.MapearEmpleado(),
+            exito = respuestaDelDominio.exito,
+            mensaje = respuestaDelDominio.respuesta
+        };
     }
     public RespuestaAbrirTurno AbrirTurno(SolicitudAbrirTurno solicitud)
     {
@@ -150,54 +144,12 @@ public class Servicios : IServicios
         return this._dominio.ModificarEmpleado(solicitud);
     }
     #endregion
+}
 
-    
-    private IServicios.RespuestaIniciarSesion Mapear(IDominio.RespuestaIniciarSesion entrada)
-    {
-        var e = entrada.empleado[0];
-        var m = new List<IServicios.Mensaje>();
-
-        foreach (var t in e.turnos)
-        {
-            var msjs = t.mensajesEnviados;
-            msjs.AddRange(t.mensajesRecibidos);
-
-            var msj_enviados = msjs.Select(m => new IServicios.Mensaje
-            {
-                idMensaje = m.codigo,
-                descripcionMensaje = "a",
-                idAsunto = 1,
-                idEstado = 2,
-                emisor = new IServicios.Empleado
-                {
-                    idEmpleado = 1,
-                    nombreEmpleado = "alguien",
-                    idSector = 2,
-                    nombreSector = "algun",
-                    mensajes = null
-                }
-            });
-            m.AddRange(msj_enviados);
-        }
-
-        return new IServicios.RespuestaIniciarSesion
-        {
-            mensaje = e is not null ? "aprobado" : "denegado",
-            exito = e is not null ? true : false,
-            empleado = new List<IServicios.Empleado> 
-            { 
-                new IServicios.Empleado
-                {
-                    idEmpleado = Convert.ToInt16(e),
-                    nombreEmpleado = e.nombre,
-                    idSector = e.seccion.codigo,
-                    nombreSector = e.seccion.descripcion,
-                    mensajes = m.ToArray()
-                } 
-            }
-        };
-    }
-    
+[Mapper]
+public static partial class Mapeador
+{
+    public static partial IServicios.EmpleadoDTO MapearEmpleado(this IDominio.EmpleadoDTO e);
 
 }
 
@@ -220,26 +172,26 @@ public interface IServicios
     {
         public string mensaje { get; set; }
         public bool exito { get; set; }
-        public List<Empleado> empleado { get; set; }
+        public EmpleadoDTO empleado { get; set; }
     }
 
-    public class Empleado
+    public class EmpleadoDTO
     {
         public int idEmpleado { get; set; }
         public string nombreEmpleado { get; set; }
         public int idSector { get; set; }
         public string nombreSector { get; set; }
-        public Mensaje[]? mensajes { get; set; }
+        public MensajeDTO[]? mensajes { get; set; }
     }
 
-    public class Mensaje
+    public class MensajeDTO
     {
         public int idMensaje { get; set; }
         public string descripcionMensaje { get; set; }
         public int idAsunto { get; set; }
         public int idEstado { get; set; }
-        public Empleado? emisor { get; set; }
-        public Empleado[]? receptores { get; set; }
+        public EmpleadoDTO? emisor { get; set; }
+        public EmpleadoDTO[]? receptores { get; set; }
     }
     
 

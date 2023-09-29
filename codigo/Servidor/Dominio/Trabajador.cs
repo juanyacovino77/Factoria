@@ -3,6 +3,7 @@ namespace dominio
 {
     public class Trabajador
     {
+        public Trabajador() { }
         public Trabajador(string dni, string nombre, Sector sector) 
         {
             this.dni = dni;
@@ -20,7 +21,10 @@ namespace dominio
         
         public List<Mensaje> ObtenerMensajes()
         {
-            return this.turnos.First().mensajesRecibidos;
+            var msjs = new List<Mensaje>();
+            msjs.AddRange(this.turnos.First().mensajesRecibidos);
+
+            return msjs;
         }
         public virtual Mensaje EnviarMensajeAlMensajero(Mensaje msj)
         {

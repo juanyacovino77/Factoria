@@ -1,5 +1,6 @@
 namespace API;
 using API.Hubs.PuertoDeEntrada;
+using puertos;
 
 public class Program
 {
@@ -11,6 +12,8 @@ public class Program
         builder.Services.AddRazorPages();
         builder.Services.AddSignalR()
             .AddJsonProtocol();
+
+        builder.Services.AddTransient<IServicios, Servicios>();
 
         var app = builder.Build();
 
@@ -30,7 +33,8 @@ public class Program
         app.UseAuthorization();
 
         app.MapRazorPages();
-        app.MapHub<MensajeriaHub>("/Mensajeria");
+        app.MapHub<MensajeriaSinLogica>("/Mensajeria");
+
         app.Run();
     }
 }

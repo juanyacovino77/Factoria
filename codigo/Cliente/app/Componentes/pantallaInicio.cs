@@ -43,16 +43,18 @@ public class pantallaInicio : Component<estado_del_inicio>
     }
     private async void OnLogin()
     {
-        //use State.Username and State.Password to login...
-        var servicio = Services.GetRequiredService<Servicios.Servidor>();
+        var servicio = Services.GetService<Servicios.IServicios>();
 
-        var respuesta = await servicio.IniciarSesion(State.Clave);
+        var respuesta = await servicio.IniciarSesion(new Contratos.SolicitudIniciarSesion { idEmpleado = State.Clave });
 
-        if (respuesta.exito)
+        SetState(s => s.Respuesta = respuesta.exito);
+
+        if (!respuesta.exito) return;
+
+        await Navigation.PushAsync<pantallaTablero, parametros_tablero>(p =>
         {
-            SetState(s => s.Respuesta = respuesta.exito);
-            await Navigation.PushAsync<pantallaTablero>();
-        }
-
+            p.operario = respuesta.operario;
+            p.conectados = respuesta.conectados;
+        });
     }
 }

@@ -26,13 +26,9 @@ namespace dominio
             // existe el empleado?
             var empleado = _negocio.ObtenerEmpleadoPorId(claveEmpleado);
 
-            if (empleado is null) return new RespuestaIniciarSesion(new List<Trabajador>());
+            if (empleado is null) return new RespuestaIniciarSesion(new EmpleadoDTO(), "fracaso", false);
 
-            //var jornada = _negocio.ObtenerEmpleadosActivos(); // en negocio se puede filtrar la info que devuelve.
-
-            //ornada.Add(empleado);
-
-            return new RespuestaIniciarSesion(new List<Trabajador>());
+            return new RespuestaIniciarSesion(Mapear(empleado), "exito", true);
         }
         public dynamic AbrirTurno(dynamic solicitud)
         {
@@ -171,10 +167,42 @@ namespace dominio
             return mensaje;
         }
 
-
-
-
+        private static EmpleadoDTO Mapear(Trabajador t)
+        {
+            return new EmpleadoDTO
+            {
+                idEmpleado = Convert.ToInt32(t.dni),
+                idSector = t.seccion.codigo,
+                nombreEmpleado = t.nombre,
+                nombreSector = t.seccion.descripcion,
+                mensajes = t.ObtenerMensajes().Select(
+                    
+                    m => new MensajeDTO
+                    {
+                         idMensaje=m.codigo,
+                         descripcionMensaje="nota msj",
+                         idAsunto=1,
+                         idEstado=1,
+                         emisor=new EmpleadoDTO
+                         {
+                             idEmpleado = Convert.ToInt32(m.emisor.dni),
+                             idSector = m.emisor.seccion.codigo,
+                             nombreEmpleado = m.emisor.nombre,
+                             nombreSector = m.emisor.seccion.descripcion
+                         },
+                        receptores = m.receptores.Select(r=> new EmpleadoDTO
+                        {
+                             idEmpleado = Convert.ToInt32(r.dni),
+                             idSector = r.seccion.codigo,
+                             nombreEmpleado = r.nombre,
+                             nombreSector = r.seccion.descripcion
+                        }).ToArray()
+                         
+                    }).ToArray()
+            };
+        }
     }
+
 
     public interface IDominio
     {
@@ -187,9 +215,53 @@ namespace dominio
         dynamic AccionarMensaje(dynamic solicitud);
 
 
-        public record RespuestaIniciarSesion(List<Trabajador> empleado); // Si la lista es vacia, no inició sesion
+        public record RespuestaIniciarSesion(EmpleadoDTO empleado, string respuesta, bool exito); // Si el empleado tiene codigo vacio, no inició
 
+        public record EmpleadoDTO
+        {
+            public int idEmpleado { get; init; }
+            public string nombreEmpleado { get; init; }
+            public int idSector { get; init; }
+            public string nombreSector { get; init; }
+            public MensajeDTO[] mensajes { get; init; }
+        }
+
+        public record MensajeDTO
+        {
+            public int idMensaje { get; init; }
+            public string descripcionMensaje { get; init; }
+            public int idAsunto { get; init; }
+            public int idEstado { get; init; }
+            public Cuerpo MyProperty { get; set; } = new Notificacion();
+            public EmpleadoDTO emisor { get; init; }
+            public EmpleadoDTO[] receptores { get; init; }
+        }
+
+        public record Cuerpo
+        {
+
+        }
+
+        public record Notificacion : Cuerpo
+        {
+
+        }
+
+        public record Receta : Cuerpo
+        {
+
+        }
+
+        public record Tarea : Cuerpo
+        {
+
+        }
+
+        //public record EmpleadoDTO(int idEmpleado, string? nombreEmpleado, int? idSector, string? nombreSector, MensajeDTO[]? mensajes);
+        //public record MensajeDTO(int idMensaje, string descripcionMensaje, int idAsunto, int idEstado, EmpleadoDTO emisor, EmpleadoDTO[] receptores);
     }
+
+
 
 }
 

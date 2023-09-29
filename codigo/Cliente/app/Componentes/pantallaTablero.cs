@@ -1,60 +1,27 @@
 ﻿using Contratos;
 using MauiReactor;
 using Microsoft.Extensions.DependencyInjection;
+using Syncfusion.Maui.Popup;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace app.Componentes;
 
+
+
+
 public class estado_del_tablero
 {
-    public Empleado empleadoOperativo { get; set; } = new Empleado()
-    {
-        idEmpleado = 1,
-        idSector = 2,
-        mensajes = new ObservableCollection<Mensaje>()
-        {
-            new Mensaje()
-            {
-                notaMensaje = "Este mensaje viene deL HIPER",
-                emisor = new Empleado(){ nombreEmpleado = "MAXIMO"},
-                notificacion=
-                    new Notificacion()
-                    {
-                        estadoActual = Notificacion.Estado.Recibido,
-                        texto = "Nueva lista de tareas requeridas:",
-                        urlImagen = "/imagen/limpia/pisos.png"
-                    },
-                idMensaje = 1,
-            },
-
-            new Mensaje()
-            {
-                notaMensaje = "Este mensaje viene de FANTI",
-                emisor = new Empleado(){ nombreEmpleado = "erni"},
-                receta = new Receta(){ paso1="Mezclar harina, agua, y azuar", paso2="Prepara la levadura y el horno" },
-                idMensaje = 2,
-            },
-
-            new Mensaje()
-            {
-                notaMensaje = "Este mensaje viene de SUPER",
-                emisor = new Empleado(){ nombreEmpleado = "lula"},
-                idMensaje = 3,
-            },
-        },
-        nombreEmpleado = "juamanuel",
-        nombreSector = "panaderia.ynsd"
-    };
+    public Empleado empleadoOperativo { get; set; }
     public Mensaje mensajeSeleccionado { get; set; }
+    public ObservableCollection<Mensaje> mensajes { get; set; } = new ObservableCollection<Mensaje>();
+    public ObservableCollection<Empleado> conectados { get; set; } = new ObservableCollection<Empleado>();
+    public bool IsPopupOpen { get; set; } = false;
 
     public void InsertarActualizarMensaje(Mensaje msjNuevo)
     {
-        var mensajes = this.empleadoOperativo.mensajes;
         var msjActual = mensajes.SingleOrDefault(m => m.idMensaje == msjNuevo.idMensaje);
 
         if (msjActual is null) mensajes.Insert(0, msjNuevo); // Es un mensaje nuevo
@@ -65,29 +32,39 @@ public class estado_del_tablero
         }
     }
 }
-public class pantallaTablero : Component<estado_del_tablero>
+public class parametros_tablero
+{
+    public Operario operario { get; set; }
+    public Empleado[] conectados { get; set; } 
+}
+public class pantallaTablero : Component<estado_del_tablero, parametros_tablero>
 {
     protected override void OnMounted()
     {
-        // suscribirse a Nuevos Mensajes
-        // suscribirse a Señales Empleado en linea
-        var servicio = Services.GetRequiredService<Servicios.Servidor>();
+        State.empleadoOperativo = Props.operario.datos;
+        Array.ForEach(Props.operario.mensajes, State.mensajes.Add);
+        Array.ForEach(Props.conectados, State.conectados.Add);
+
+        var servicio = Services.GetRequiredService<Servicios.IServicios>();
 
         servicio.MensajeRecibido += RecibirMensaje; // escucha nuevos msj
-        servicio.EmpleadoConectado += RecibirNuevoConectado;
+        servicio.EmpleadoConectado += RecibirNuevoConectado; // escucha nuevos empleados "conectados"
+        servicio.EmpleadoDesconectado += RecibirNuevoDesconectado; // escucha nuevos empleados "desconectados"
 
         base.OnMounted();
     }
-
     public override VisualNode Render()
     {
-        return new ContentPage()
-        {
-            new Grid("80 , *", "* , *")
+        return new NavigationPage() {
+
+            new ContentPage()
             {
-                GraficarEncabezado(),
-                GraficarListaDeMensajes(),
-                GraficarCuerpoDelMensaje()
+                new Grid("80 , *", "* , *")
+                {
+                    GraficarEncabezado(),
+                    GraficarListaDeMensajes(),
+                    GraficarCuerpoDelMensaje()
+                }
             }
         };
 
@@ -95,25 +72,77 @@ public class pantallaTablero : Component<estado_del_tablero>
 
     private VisualNode GraficarEncabezado()
     {
+
         return new Grid("*,*", "*,*")
         {
-           new Label($"Tablero de {State.empleadoOperativo.nombreEmpleado} del sector {State.empleadoOperativo.nombreSector} ")
+           new Label($"Tablero de {State.empleadoOperativo.nombreEmpleado} " +
+           $"del sector {State.empleadoOperativo.nombreSector} ")
            .FontSize(20)
            .Padding(25,0,0,0)
 
            ,
 
-           new Label($"id del empleado {State.empleadoOperativo.idEmpleado} y del sector {State.empleadoOperativo.idSector}")
+           new Label($"id del empleado {State.empleadoOperativo.idEmpleado} " +
+           $"y del sector {State.empleadoOperativo.idSector}")
            .Padding(25, 0, 0, 0)
            .GridRow(1)
+
+           ,
+
+           new Button("ver conectados")
+           .GridRow(1).GridColumn(1)
+           .OnClicked( () => SetState(s => s.IsPopupOpen = true))
+           
+           ,
+
+            new SfPopup()
+                    .Content(GraficarTablaEmpleadosConectados)
+                    .HeaderTitle("empleados contectados:")
+                    .IsOpen(State.IsPopupOpen)
+                    .OnClosed(()=>SetState(s => s.IsPopupOpen = false, false))
+                    .GridColumn(1)
+                    .GridRow(0)
+
         }
-            .BackgroundColor(Colors.Black)
-            .GridColumn(0)
-            .GridRow(0)
-            .GridColumnSpan(2);
+        .BackgroundColor(Colors.Black)
+        .GridColumn(0)
+        .GridRow(0)
+        .GridColumnSpan(2);
+
+
+        VisualNode GraficarTablaEmpleadosConectados()
+        {
+            return new CollectionView
+            {
+
+            }
+            .ItemsSource(State.conectados, p => new Label($"{p.idEmpleado} - {p.nombreEmpleado} - {p.nombreSector} ").TextColor(Colors.Black))
+            .SelectionMode(MauiControls.SelectionMode.Single)
+            .OnSelectionChanged((s, e) => SeleccionarEmpleadoConectado(e))
+            ;
+
+            async void SeleccionarEmpleadoConectado(MauiControls.SelectionChangedEventArgs e)
+            {
+                SetState(s => s.IsPopupOpen = false);
+
+                var empleadoSeleccionado = e.CurrentSelection.FirstOrDefault() as Empleado;
+                var empleadoOperativo = State.empleadoOperativo;
+
+                await Navigation.PushAsync<pantallaDespacho, parametros_despacho>(p => 
+                { 
+                    p.empleadoConectadoSeleccionado = empleadoSeleccionado;
+                    p.empleadoOperativo = empleadoOperativo;
+                    p.mensajeEnviado += GuardarMensajeEnviado; // callback
+                }) ;
+            }
+
+            void GuardarMensajeEnviado(Mensaje msj)
+            {
+                SetState(s => s.InsertarActualizarMensaje(msj));
+            }
+        }
 
     }
-
     private VisualNode GraficarListaDeMensajes()
     {
         return new VStack()
@@ -121,21 +150,19 @@ public class pantallaTablero : Component<estado_del_tablero>
             new Label("Mensajes").FontSize(25),
 
             new Button("Eliminar mensajes")
-
                 .Padding(10,10,10,10)
                 .WidthRequest(150)
-                .OnClicked( () => SetState(s => s.empleadoOperativo.mensajes.Clear()) )
-
+                .OnClicked( () => SetState(s => s.mensajes.Clear()) )
             ,
 
             new Grid("*", "*")
             {
                 new CollectionView()
-                    .ItemsSource(State.empleadoOperativo.mensajes, GraficarMensajes)
+                    .ItemsSource(State.mensajes, GraficarMensajes)
                     .SelectionMode(MauiControls.SelectionMode.Single)
                     .OnSelectionChanged((s,e) => SeleccionarMensaje(e))
             }
-            .HeightRequest(500)
+            .HeightRequest(350)
 
             ,
 
@@ -145,31 +172,28 @@ public class pantallaTablero : Component<estado_del_tablero>
                     new Mensaje()
                     {
                         notaMensaje = "Este mensaje viene de ALGUN LADO DEL MUNDO",
-                        emisor = new Empleado(){ nombreEmpleado = "lula"},
+                        emisor = new Empleado(){ nombreEmpleado = "carmen", nombreSector= "CAJA - FANTI"},
                         notificacion= new Notificacion(),
-                        idMensaje = 1,
+                        idMensaje = new Random().Next(0, 100),
                     }))),
 
         }
-            .BackgroundColor(Colors.LightSkyBlue)
-            .GridRow(1);
-
-        void SeleccionarMensaje(MauiControls.SelectionChangedEventArgs msjSeleccionado)
-        {
-            SetState(s => s.mensajeSeleccionado = msjSeleccionado.CurrentSelection.FirstOrDefault() as Mensaje);
-        }
+        .BackgroundColor(Colors.LightSteelBlue)
+        .GridRow(1);
 
         VisualNode GraficarMensajes(Mensaje msj)
         {
             return new cajaMensaje()
             {
             }
-                .Descripcion(msj.notaMensaje)
-                .NombreEmisor(msj.emisor.nombreEmpleado);
+            .Mensaje(msj);
         }
 
+        void SeleccionarMensaje(MauiControls.SelectionChangedEventArgs msjSeleccionado)
+        {
+            SetState(s => s.mensajeSeleccionado = msjSeleccionado.CurrentSelection.FirstOrDefault() as Mensaje);
+        }
     }
-
     private VisualNode GraficarCuerpoDelMensaje()
     {
         return State.mensajeSeleccionado switch
@@ -204,8 +228,6 @@ public class pantallaTablero : Component<estado_del_tablero>
 
                     ,
 
-                new Button("Responder mensaje")
-                    .OnClicked(ResponderMensaje)
             }
                 .BackgroundColor(Colors.CornflowerBlue)
                 .GridRow(1)
@@ -233,36 +255,14 @@ public class pantallaTablero : Component<estado_del_tablero>
         VisualNode GraficarCuerpoVacio()
         {
             return new VStack()
+            {
+
+            }
                     .BackgroundColor(Colors.CornflowerBlue)
                     .GridRow(1)
                     .GridColumn(1);
         }
 
-        async void ResponderMensaje()
-        {
-            // obtener el mensaje 
-            var msj = State.mensajeSeleccionado;
-
-            // obtener el servicio
-            var servicio = Services.GetRequiredService<Servicios.Servidor>();
-
-            msj.notificacion = null;
-
-            msj.receta = new Receta()
-            {
-                paso1 = "Preparar milanesas, cortar bifes de lomo, y atiernizarlos",
-                paso2 = "Hacer mezcla de huevo y prepara pan rallado"
-            };
-
-            // actualizar la descripcion del mensaje para hacer eso
-            // hay que reenviarselo al emisor
-            var respuesta = await servicio.EnviarMensaje(new SolicitudEnviarMensaje()
-            {
-                mensaje = msj
-            }
-            );
-
-        }
 
         async void ActualizarEstadoCuerpoMensaje()
         {
@@ -270,7 +270,7 @@ public class pantallaTablero : Component<estado_del_tablero>
             var msj = State.mensajeSeleccionado;
 
             // servicio del servidor
-            var servicio = Services.GetRequiredService<Servicios.Servidor>();
+            var servicio = Services.GetRequiredService<Servicios.IServicios>();
 
             // actualizar el estado
             msj.notificacion.estadoActual = Notificacion.Estado.Visto;
@@ -280,12 +280,43 @@ public class pantallaTablero : Component<estado_del_tablero>
         }
     }
 
-    private void RecibirMensaje(object? sender, Mensaje msjRecibido)
-    {
-        SetState(s => s.InsertarActualizarMensaje(msjRecibido));
-    }
 
-    private void RecibirNuevoConectado(object? sender, string msj)
+
+    private void RecibirMensaje(object sender, Mensaje msjRecibido)
+        => SetState(s => s.InsertarActualizarMensaje(msjRecibido));
+    private void RecibirNuevoConectado(object sender, Empleado item)
+        => SetState(s => s.conectados.Add(item));
+    private void RecibirNuevoDesconectado(object sender, Empleado item)
+        => SetState(s => s.conectados.Remove(item));
+}
+
+
+
+
+
+
+[Scaffold(typeof(Syncfusion.Maui.Popup.SfPopup))]
+public partial class SfPopup
+{
+    public SfPopup Content(Func<VisualNode> render)
     {
+        this.Set(Syncfusion.Maui.Popup.SfPopup.ContentTemplateProperty,
+            new MauiControls.DataTemplate(() => TemplateHost.Create(render()).NativeElement));
+
+        return this;
     }
 }
+
+[Scaffold(typeof(Syncfusion.Maui.Core.SfView))]
+public abstract class SfView { }
+
+
+
+/* posibles ramificaciones:
+ * 
+ * separacion-en-componentes: encabezado, mensajes, cuerpo
+ * distintas implementaciones de los DTOS mensaje - cuerpo, genericos, herencia
+ * distintas implementaciones del mapa de direcciones singalR - idEmpleado
+ * logica de conectados del hub
+ * 
+ */
