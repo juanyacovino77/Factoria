@@ -84,7 +84,15 @@ public class Servidor : IServicios
     private async void IniciarConexion()
     {
         if (_conexion.State is not HubConnectionState.Connected)
-            await _conexion.StartAsync();
+            try
+            {
+                await _conexion.StartAsync();
+            }
+            catch (Exception ex)
+            {
+                
+                throw;
+            }
     }
 
     public async Task<RespuestaIniciarSesion> IniciarSesion(SolicitudIniciarSesion solicitud)

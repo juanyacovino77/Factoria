@@ -1,6 +1,7 @@
 ﻿using app.Componentes;
 using MauiReactor;
 using Microsoft.Extensions.DependencyInjection;
+using SkiaSharp.Views.Maui.Controls.Hosting;
 using Syncfusion.Maui.Core.Hosting;
 
 namespace app
@@ -13,13 +14,14 @@ namespace app
             var builder = MauiApp.CreateBuilder();
 
             builder
-                .UseMauiReactorApp<pantallaInicio>(app =>
+                .UseMauiReactorApp<PantallaInicio>(app =>
                 {
                     app.AddResource("Resources/Styles/Colors.xaml");
                     app.AddResource("Resources/Styles/Styles.xaml");
 
                     app.SetWindowsSpecificAssetsDirectory("Assets");
                 })
+                .UseSkiaSharp()
                 
                 #if DEBUG
                 .EnableMauiReactorHotReload()

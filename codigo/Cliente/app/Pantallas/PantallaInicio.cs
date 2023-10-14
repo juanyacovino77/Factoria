@@ -1,35 +1,51 @@
 ﻿using MauiReactor;
+using app.Pantallas.Componentes.Controles;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using app.Modelos;
 
 namespace app.Componentes;
 
-public class estado_del_inicio
+internal class estado_del_inicio
 {
     public string Clave { get; set; }
     public bool Respuesta { get; set; }
 }
-public class pantallaInicio : Component<estado_del_inicio>
+internal class PantallaInicio : Component<estado_del_inicio>
 {
     public override VisualNode Render()
     {
         return new NavigationPage
-            {
+        {
                 new ContentPage()
                 {
                     new StackLayout()
                     {
+                        new Animacion()
+                            .Source(new SkiaSharp.Extended.UI.Controls.SKFileLottieImageSource()
+                            {
+                                File = "dotnetbot.json"
+                            })
+                            .IsAnimationEnabled(true)
+                            .RepeatCount(-1)
+                            .HeightRequest(200)
+                            .WidthRequest(200)
+                            .HCenter()
+
+                            ,
+
                         new Entry()
                             .Placeholder("Clave")
-                            .OnTextChanged((s,e)=> SetState(_ => _.Clave = e.NewTextValue)),
+                            .OnTextChanged((s,e)=> SetState(_ => _.Clave = e.NewTextValue))
+                            .IsPassword(true)
+                            
+                            ,
 
                         new Button("Iniciar sesión")
                             .IsEnabled(!string.IsNullOrWhiteSpace(State.Clave) && !string.IsNullOrWhiteSpace(State.Clave))
-                            .OnClicked(OnLogin),
+                            .OnClicked(OnLogin)
+                            
+                            ,
 
                         ! State.Respuesta
                         ? new Label("Denegado")
@@ -39,7 +55,7 @@ public class pantallaInicio : Component<estado_del_inicio>
                     .VCenter()
                     .HCenter()
                 }
-            };
+        };
     }
     private async void OnLogin()
     {
@@ -51,10 +67,11 @@ public class pantallaInicio : Component<estado_del_inicio>
 
         if (!respuesta.exito) return;
 
-        await Navigation.PushAsync<pantallaTablero, parametros_tablero>(p =>
+        await Navigation.PushAsync<PantallaTablero, parametros_tablero>(p =>
         {
             p.operario = respuesta.operario;
             p.conectados = respuesta.conectados;
         });
     }
 }
+

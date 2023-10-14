@@ -38,16 +38,34 @@
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="Resources\Images\icono_cerrar_sesion.svg" />
+    <None Remove="Resources\Images\icono_conectados.png" />
+    <None Remove="Resources\Images\icono_conectados1.jpg" />
+    <None Remove="Resources\Images\icono_conectados2.svg" />
+    <None Remove="Resources\Images\icono_conectados3.png" />
+    <None Remove="Resources\Images\icono_conectados4.png" />
+    <None Remove="Resources\Images\icono_despachado.png" />
     <None Remove="Resources\Images\icono_mensaje.png" />
     <None Remove="Resources\Images\icono_mensaje2.jpg" />
     <None Remove="Resources\Images\icono_mensaje3.png" />
+    <None Remove="Resources\Images\icono_recibido.png" />
+    <None Remove="Resources\Images\icono_sindespachar.png" />
+    <None Remove="Resources\Images\icono_visto.png" />
+    <None Remove="Resources\Raw\conectado.json" />
+    <None Remove="Resources\Raw\dotnetbot.json" />
+    <None Remove="Resources\Raw\notificacion.json" />
+    <None Remove="Resources\Raw\notificacion1.json" />
+    <None Remove="Resources\Raw\receta.json" />
+    <None Remove="Resources\Raw\recetas.json" />
+    <None Remove="Resources\Raw\tareas.json" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.8" />
-    <PackageReference Include="Reactor.Maui" Version="1.0.139" />
-    <PackageReference Include="Reactor.Maui.Canvas" Version="1.0.139" />
-    <PackageReference Include="Reactor.Maui.ScaffoldGenerator" Version="1.0.139" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Reactor.Maui" Version="1.0.145" />
+    <PackageReference Include="Reactor.Maui.Canvas" Version="1.0.145" />
+    <PackageReference Include="Reactor.Maui.ScaffoldGenerator" Version="1.0.145" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
+    <PackageReference Include="SkiaSharp.Extended.UI.Maui" Version="2.0.0-preview.86" />
     <PackageReference Include="Syncfusion.Maui.Popup" Version="22.2.7" />
 
   </ItemGroup>

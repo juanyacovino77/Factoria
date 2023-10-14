@@ -173,7 +173,7 @@ public class MensajeriaSinLogica : Hub, IMensajeriaHub
                          emisor = new Empleado(){ nombreEmpleado = "MAXIMO", nombreSector="CARNICERIA"},
                          notificacion= new Notificacion()
                              {
-                                 estadoActual = Notificacion.Estado.Recibido,
+                                 estadoActual = Notificacion.Estado.NoConfirmado,
                                  texto = "Nueva lista de tareas requeridas:",
                                  urlImagen = "/imagen/limpia/pisos.png"
                              },
@@ -192,6 +192,7 @@ public class MensajeriaSinLogica : Hub, IMensajeriaHub
                      {
                          notaMensaje = "Este mensaje viene de SUPER",
                          emisor = new Empleado(){ nombreEmpleado = "lula", nombreSector= "gestion"},
+                         tareas= new Tareas(){ },
                          idMensaje = 3,
                      },
                  },
@@ -201,7 +202,7 @@ public class MensajeriaSinLogica : Hub, IMensajeriaHub
         {
             datos = new Empleado()
             {
-                 idEmpleado = 1,
+                 idEmpleado = 2,
                  idSector = 2,
                  nombreEmpleado = "sebastian",
                  nombreSector = "carniceria"
@@ -214,7 +215,7 @@ public class MensajeriaSinLogica : Hub, IMensajeriaHub
                          emisor = new Empleado(){ nombreEmpleado = "MAXIMO", nombreSector="CARNICERIA"},
                          notificacion= new Notificacion()
                              {
-                                 estadoActual = Notificacion.Estado.Recibido,
+                                 estadoActual = Notificacion.Estado.NoConfirmado,
                                  texto = "Nueva lista de tareas requeridas:",
                                  urlImagen = "/imagen/limpia/pisos.png"
                              },
@@ -255,7 +256,7 @@ public class MensajeriaSinLogica : Hub, IMensajeriaHub
                          emisor = new Empleado(){ nombreEmpleado = "MAXIMO", nombreSector="CARNICERIA"},
                          notificacion= new Notificacion()
                              {
-                                 estadoActual = Notificacion.Estado.Recibido,
+                                 estadoActual = Notificacion.Estado.NoConfirmado,
                                  texto = "Nueva lista de tareas requeridas:",
                                  urlImagen = "/imagen/limpia/pisos.png"
                              },
