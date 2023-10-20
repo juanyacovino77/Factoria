@@ -184,7 +184,26 @@ public class MensajeriaSinLogica : Hub, IMensajeriaHub
                      {
                          notaMensaje = "Este mensaje viene de FANTI",
                          emisor = new Empleado(){ nombreEmpleado = "erni", nombreSector = "COCINA"},
-                         receta = new Receta(){ paso1="Mezclar harina, agua, y azuar", paso2="Prepara la levadura y el horno" },
+                         receta = new Receta()
+                         {
+                              pasos = new PasoReceta[]
+                              {
+                                  new PasoReceta()
+                                  {
+                                       paso="Conseguir 100g de aceite"
+                                  }
+                                  ,
+                                  new PasoReceta()
+                                  {
+                                      paso="Mezclar con huevo"
+                                  }
+                                  ,
+                                  new PasoReceta()
+                                  {
+                                      paso="Hacer 2kg milanes"
+                                  }
+                              }
+                         },
                          idMensaje = 2,
                      },
 
@@ -226,7 +245,26 @@ public class MensajeriaSinLogica : Hub, IMensajeriaHub
                      {
                          notaMensaje = "Este mensaje viene de FANTI",
                          emisor = new Empleado(){ nombreEmpleado = "erni", nombreSector = "COCINA"},
-                         receta = new Receta(){ paso1="Mezclar harina, agua, y azuar", paso2="Prepara la levadura y el horno" },
+                         receta = new Receta()
+                         {
+                              pasos = new PasoReceta[]
+                              {
+                                  new PasoReceta()
+                                  {
+                                       paso="Conseguir 100g de aceite"
+                                  }
+                                  ,
+                                  new PasoReceta()
+                                  {
+                                      paso="Mezclar con huevo"
+                                  }
+                                  ,
+                                  new PasoReceta()
+                                  {
+                                      paso="Hacer 2kg milanes"
+                                  }
+                              }
+                         },
                          idMensaje = 2,
                      },
 
@@ -267,7 +305,26 @@ public class MensajeriaSinLogica : Hub, IMensajeriaHub
                      {
                          notaMensaje = "Este mensaje viene de FANTI",
                          emisor = new Empleado(){ nombreEmpleado = "erni", nombreSector = "COCINA"},
-                         receta = new Receta(){ paso1="Mezclar harina, agua, y azuar", paso2="Prepara la levadura y el horno" },
+                         receta = new Receta()
+                         {
+                              pasos = new PasoReceta[]
+                              {
+                                  new PasoReceta()
+                                  {
+                                       paso="Conseguir 100g de aceite"
+                                  }
+                                  ,
+                                  new PasoReceta()
+                                  {
+                                      paso="Mezclar con huevo"
+                                  }
+                                  ,
+                                  new PasoReceta()
+                                  {
+                                      paso="Hacer 2kg milanes"
+                                  }
+                              }
+                         },
                          idMensaje = 2,
                      },
 
@@ -318,7 +375,7 @@ public class MensajeriaSinLogica : Hub, IMensajeriaHub
 
         // notificamos a todos los clientes de que un nuevo empleado inició sesión
         await Clients.All.SendAsync("RecibirNotificacionEmpleadoConectado", empleadoConectado);
-
+        Console.WriteLine($"{empleadoConectado.nombreEmpleado} inició sesión en POC {Context.ConnectionId}");
 
         return new RespuestaIniciarSesion()
         {
@@ -331,11 +388,16 @@ public class MensajeriaSinLogica : Hub, IMensajeriaHub
 
     public async Task<RespuestaEnviarMensaje> EnviarMensaje(SolicitudEnviarMensaje solicitud)
     {
+        if (solicitud.mensaje is { emisor: null, receptor:null }) return new RespuestaEnviarMensaje() { exito = false, respuesta= "Mensaje incompleto"};
+
         // logica de reenvio de mensajes a los clientes, segun id, grupo, sector, etc
         var idEmpleado = solicitud.mensaje.receptor.idEmpleado;
         var clave = _direcciones.Keys.ToList().Find(e => e.idEmpleado == idEmpleado);
-        var direccionEnvio = _direcciones[clave];
 
+        if (clave is null) return new RespuestaEnviarMensaje() { exito = false, respuesta = "El receptor no está activo" };
+
+        var direccionEnvio = _direcciones[clave];
+        Console.WriteLine($"{solicitud.mensaje.emisor.nombreEmpleado} le envio un msj a {solicitud.mensaje.receptor.nombreEmpleado} con cuerpo {solicitud.mensaje}");
 
         await this.Clients.Client(direccionEnvio).SendAsync("RecibirNuevoMensaje", solicitud.mensaje);
 
@@ -347,7 +409,13 @@ public class MensajeriaSinLogica : Hub, IMensajeriaHub
         // buscar en direcciones y sacarlo de la conexion
         var clave = _direcciones.Keys.ToList().Find(e => e.idEmpleado == Convert.ToInt16(solicitud.idEmpleado));
 
+        if (clave is null) return new RespuestaCerrarSesion("error", false);
+
+        Console.WriteLine($"{clave.nombreEmpleado} cerró sesión en POC {Context.ConnectionId}");
         _direcciones.Remove(clave, out _);
+
+        // notificar a los clientes que se desconectó un empleado
+        await Clients.All.SendAsync("RecibirNotificacionEmpleadoDesconectado", clave);
 
         return new RespuestaCerrarSesion("done", true);
     }
@@ -361,6 +429,7 @@ public class MensajeriaSinLogica : Hub, IMensajeriaHub
 
         // puede cerrar la conexion el hub o el POC
         var clave = _direcciones.ToList().Find(i => i.Value == Context.ConnectionId).Key;
+        if (clave is null) return;
         _direcciones.Remove(clave);
 
         // notificar a los clientes que se desconectó un empleado

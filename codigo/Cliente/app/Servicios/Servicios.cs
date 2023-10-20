@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.SignalR.Client;
 using System;
 using System.Diagnostics;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace app.Servicios;
@@ -12,6 +13,8 @@ public interface IServicios
     event EventHandler<Empleado> EmpleadoConectado;
     event EventHandler<Empleado> EmpleadoDesconectado;
 
+    Task PrenderConexion();
+
     Task<RespuestaIniciarSesion> IniciarSesion(SolicitudIniciarSesion solicitud);
     Task<RespuestaEnviarMensaje> EnviarMensaje(SolicitudEnviarMensaje solicitud);
     Task<RespuestaCerrarSesion> CerrarSesion(SolicitudCerrarSesion soliciutd);
@@ -19,7 +22,7 @@ public interface IServicios
 
 public class Servidor : IServicios
 {
-    public HubConnection _conexion;
+    private HubConnection _conexion;
     public event EventHandler<Mensaje> MensajeRecibido;
     public event EventHandler<Empleado> EmpleadoConectado;
     public event EventHandler<Empleado> EmpleadoDesconectado;
@@ -72,8 +75,6 @@ public class Servidor : IServicios
 
             return Task.CompletedTask;
         };
-
-        IniciarConexion();
     }
 
     private async void RevocarConexionCaida(string idUltimaConexion)
@@ -81,24 +82,20 @@ public class Servidor : IServicios
         await _conexion.InvokeAsync("RevocarConexionCaida", idUltimaConexion);
     }
 
-    private async void IniciarConexion()
+    public async Task PrenderConexion()
     {
         if (_conexion.State is not HubConnectionState.Connected)
-            try
-            {
-                await _conexion.StartAsync();
-            }
-            catch (Exception ex)
-            {
-                
-                throw;
-            }
+        {
+            await _conexion.StartAsync();
+        }
     }
 
     public async Task<RespuestaIniciarSesion> IniciarSesion(SolicitudIniciarSesion solicitud)
     {
+        if (_conexion.State is not HubConnectionState.Connected) return new RespuestaIniciarSesion() { exito=false, mensaje="Servidor apagado"};
+
         var respuesta = await _conexion.InvokeAsync<RespuestaIniciarSesion>
-                                     ("IniciarSesion", new SolicitudIniciarSesion { idEmpleado = solicitud.idEmpleado });
+                                     ("IniciarSesion", solicitud);
 
 
         return respuesta;
@@ -108,14 +105,18 @@ public class Servidor : IServicios
     {
 
         var respuesta = await _conexion.InvokeAsync<RespuestaEnviarMensaje>
-                                    ("EnviarMensaje", new SolicitudEnviarMensaje { mensaje = solicitud.mensaje });
+                                    ("EnviarMensaje", solicitud);
 
         return respuesta;
     }
 
-    public async Task<RespuestaCerrarSesion> CerrarSesion(SolicitudCerrarSesion soliciutd)
+    public async Task<RespuestaCerrarSesion> CerrarSesion(SolicitudCerrarSesion solicitud)
     {
-        throw new NotImplementedException();
+        var respuesta = await _conexion.InvokeAsync<RespuestaCerrarSesion>
+                             ("CerrarSesion", solicitud);
+
+
+        return respuesta;
     }
 }
 
@@ -130,14 +131,29 @@ public class Mock : IServicios
         throw new NotImplementedException();
     }
 
+    public Task<bool> ConectarAlServidor()
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task<RespuestaEnviarMensaje> EnviarMensaje(SolicitudEnviarMensaje solicitud)
     {
         return new RespuestaEnviarMensaje();
     }
 
+    public void IniciarConexion()
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task<RespuestaIniciarSesion> IniciarSesion(SolicitudIniciarSesion solicitud)
     {
         return new RespuestaIniciarSesion();
+    }
+
+    public Task PrenderConexion()
+    {
+        throw new NotImplementedException();
     }
 }
     

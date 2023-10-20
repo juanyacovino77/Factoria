@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-
+﻿
 namespace Contratos; 
 
 /* 
@@ -47,6 +46,7 @@ public class Notificacion
     public Estado estadoActual { get; set; }
     public string? texto { get; set; }
     public string? urlImagen { get; set; }
+    public string? respuesta { get; set; }
 }
 public class Tareas 
 {
@@ -57,6 +57,7 @@ public class Tareas
         Finalizado=2,
         Rechazado=3,
     }
+    public Estado estado { get; set; }
     public Tarea[] tareas { get; set; }
 }
 public class Tarea
@@ -71,8 +72,7 @@ public class Tarea
 }
 public class Receta 
 {
-    public string paso1 { get; set; }
-    public string paso2 { get; set; }
+    public PasoReceta[] pasos { get; set; }
 }
 public class PasoReceta
 {

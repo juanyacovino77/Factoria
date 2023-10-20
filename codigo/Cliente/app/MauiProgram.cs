@@ -1,4 +1,5 @@
 ﻿using app.Componentes;
+using CommunityToolkit.Maui;
 using MauiReactor;
 using Microsoft.Extensions.DependencyInjection;
 using SkiaSharp.Views.Maui.Controls.Hosting;
@@ -22,6 +23,7 @@ namespace app
                     app.SetWindowsSpecificAssetsDirectory("Assets");
                 })
                 .UseSkiaSharp()
+                .UseMauiCommunityToolkitMediaElement()
                 
                 #if DEBUG
                 .EnableMauiReactorHotReload()

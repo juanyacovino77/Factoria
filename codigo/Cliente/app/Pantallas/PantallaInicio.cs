@@ -1,8 +1,8 @@
 ﻿using MauiReactor;
 using app.Pantallas.Componentes.Controles;
 using Microsoft.Extensions.DependencyInjection;
-using System.Threading.Tasks;
-using app.Modelos;
+using app.Servicios;
+using System;
 
 namespace app.Componentes;
 
@@ -36,13 +36,12 @@ internal class PantallaInicio : Component<estado_del_inicio>
 
                         new Entry()
                             .Placeholder("Clave")
-                            .OnTextChanged((s,e)=> SetState(_ => _.Clave = e.NewTextValue))
+                            .OnTextChanged((s,e)=> SetState(s => s.Clave = e.NewTextValue, invalidateComponent:false))
                             .IsPassword(true)
                             
                             ,
 
                         new Button("Iniciar sesión")
-                            .IsEnabled(!string.IsNullOrWhiteSpace(State.Clave) && !string.IsNullOrWhiteSpace(State.Clave))
                             .OnClicked(OnLogin)
                             
                             ,
@@ -59,9 +58,19 @@ internal class PantallaInicio : Component<estado_del_inicio>
     }
     private async void OnLogin()
     {
-        var servicio = Services.GetService<Servicios.IServicios>();
+        var servicio = Services.GetService<IServicios>();
+        try
+        {
+            await servicio.PrenderConexion();
+        }
+        catch(Exception ex) 
+        {
+            await ContainerPage.DisplayAlert("Error", "El servidor está apagado", "Ok");
+            return;
+        }
 
         var respuesta = await servicio.IniciarSesion(new Contratos.SolicitudIniciarSesion { idEmpleado = State.Clave });
+
 
         SetState(s => s.Respuesta = respuesta.exito);
 

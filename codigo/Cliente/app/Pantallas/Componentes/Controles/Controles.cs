@@ -31,3 +31,8 @@ public partial class Popup
 [Scaffold(typeof(Syncfusion.Maui.Core.SfView))]
 public abstract class SfView { }
 #endregion
+
+#region SONIDO
+[Scaffold(typeof(CommunityToolkit.Maui.Views.MediaElement))]    
+public partial class SonidoMensaje { }
+#endregion

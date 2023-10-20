@@ -2,6 +2,7 @@
 using MauiReactor;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using static app.Componentes.estado_del_despacho;
@@ -12,7 +13,7 @@ namespace app.Componentes;
 public class parametros_despacho
 {
     public Empleado empleadoOperativo { get; set; } // quien está enviando el nuevo mensaje
-    public Empleado empleadoConectadoSeleccionado { get; set; } // a quien está dirijido el nuevo mensaje
+    public Empleado[] empleadoConectadoSeleccionado { get; set; } // a quien está dirijido el nuevo mensaje
     public Action<Mensaje> mensajeEnviado { get; set; }
 }
 public class estado_del_despacho
@@ -27,69 +28,69 @@ public class estado_del_despacho
     public Mensaje nuevoMensaje { get; set; } = new Mensaje();
     public ObservableCollection<Tarea> tareas { get; set; } = new ObservableCollection<Tarea>();
     public Cuerpo tipoMensaje { get; set; }
+
+    public void LimpiarCuerpoMensaje()
+    {
+        nuevoMensaje.actualizacion = null;
+        nuevoMensaje.notificacion = null;
+        nuevoMensaje.receta = null;
+        nuevoMensaje.tareas = null;
+    }
 }
 public class PantallaDespacho : Component<estado_del_despacho, parametros_despacho>
 {
     protected override void OnMounted()
     {
         State.nuevoMensaje.emisor = Props.empleadoOperativo;
-        State.nuevoMensaje.receptor = Props.empleadoConectadoSeleccionado;
     }
     public override VisualNode Render()
     {
         return
             new ContentPage()
             {
-                new Grid("*", "*, *"){
+                new Grid("*", "auto"){
 
                     new VStack()
                     {
-                        new Label($"msj para:{State.nuevoMensaje.receptor.nombreEmpleado} de parte de:{State.nuevoMensaje.emisor.nombreEmpleado}")
-                        .FontSize(10)
-                        .TextColor(Colors.Black),
+                       
+                            new Label($"{Props.empleadoOperativo.nombreEmpleado} le estas enviando un mensaje a:" +
+                            $" {Props.empleadoConectadoSeleccionado.SelectMany(s => {return s.nombreEmpleado; })}")
+                            .FontSize(10)
+                            .TextColor(Colors.White).Margin(20)
+                        ,
 
-                        new Label("Elija un tipo de mensaje a enviar:")
-                        .FontSize(20)
-                        .Padding(20)
-                        .TextColor(Colors.Black)
+                        new HStack()
+                        {
+                            new Picker()
+                                .Title("Tipo de mensaje")
+                                .ItemsSource(Enum.GetValues<Cuerpo>().Select(c => c.ToString()).ToList())
+                                .OnSelectedIndexChanged(i => SetState(s=>s.tipoMensaje=(Cuerpo)i+1))
+                                .BackgroundColor(Colors.Grey)
+
+                                ,
+
+                            new ImageButton("icono_mensaje3.png")
+                                .HeightRequest(50)
+                                .WidthRequest(50)
+                                .OnClicked(() => EnviarMensaje(State.nuevoMensaje))
+                                .Margin(10)
+                                .HCenter()
+                        }
 
                         ,
 
-                        Enum.GetValues<Cuerpo>().Select(e => 
-                                 new RadioButton(e.ToString())
-                                 .CornerRadius(10)
-                                 .Margin(1)
-                                 .HCenter()
-                                 .BorderWidth(1.5)
-                                 .BorderColor(Colors.BlueViolet)
-                                 .BackgroundColor(Colors.Black)
-                                 .TextColor(Colors.Black)
-                                 .OnCheckedChanged((s,a) => SetState(s => s.tipoMensaje= e)))
-                        
-                        ,
-                        
-                        new ImageButton("icono_mensaje3.png")
-                            .HeightRequest(150)
-                            .WidthRequest(150)
-                            .OnClicked(() => EnviarMensaje(State.nuevoMensaje))
-
+                        State.tipoMensaje switch
+                        {
+                            Cuerpo.Notificacion => GraficarFormularioNotificacion(),
+                            Cuerpo.Tareas => GraficarFormularioTareas(),
+                            Cuerpo.Receta => GraficarFormularioReceta(),
+                            _ => GraficarFormularioNotificacion()
+                        }
 
                     }
-                        .HCenter()
-                        .BackgroundColor(Colors.AliceBlue)
-                        .Padding(20)
-                    ,
-
-                    State.tipoMensaje switch
-                    {
-                        Cuerpo.Notificacion => GraficarFormularioNotificacion(),
-                        Cuerpo.Tareas => GraficarFormularioTareas(),
-                        Cuerpo.Receta => GraficarFormularioReceta(),
-                        _ => GraficarFormularioNotificacion()
-                    }
-                    
-                    ,
-
+                    .HCenter()
+                    .Padding(20)
+                    .Margin(30)
                 }
             };
 
@@ -101,7 +102,7 @@ public class PantallaDespacho : Component<estado_del_despacho, parametros_despac
                 new Label("Nueva notificacion")
                     .FontSize(25)
                     .HCenter()
-                    
+
                     ,
 
                 new Entry()
@@ -114,9 +115,7 @@ public class PantallaDespacho : Component<estado_del_despacho, parametros_despac
 
                 new Label("Adjunte una imagen")
                     .HCenter()
-            }
-            .GridColumn(1)
-            .BackgroundColor(Colors.LightBlue);  
+            };
         }
         VisualNode GraficarFormularioTareas() 
         {
@@ -124,15 +123,15 @@ public class PantallaDespacho : Component<estado_del_despacho, parametros_despac
             {
                 new Label("Nuevas tareas")
                     .HCenter()
-                    .TextColor(Colors.Black)
+                    .TextColor(Colors.White)
                     .FontSize(25)
-                    
+
                     ,
 
                 new Entry()
                     .Margin(20)
                     .HCenter()
-                    .TextColor(Colors.Black)
+                    .TextColor(Colors.White)
                     .Placeholder("Ingrese tareas individuales a enviar")
                     .OnCompleted((s, e) => AgregarTarea(s,e))
 
@@ -140,9 +139,7 @@ public class PantallaDespacho : Component<estado_del_despacho, parametros_despac
 
                 new CollectionView()
                     .ItemsSource(State.tareas, GraficarCajaTarea)
-            }
-            .GridColumn(1)
-            .BackgroundColor(Colors.LightCyan);
+            };
 
             void AgregarTarea(object sender, EventArgs e) 
             {
@@ -185,9 +182,7 @@ public class PantallaDespacho : Component<estado_del_despacho, parametros_despac
                 new Entry()
                 .Placeholder("Ingrese tareas individuales a enviar")
                 .OnTextChanged((t) => SetState(s => s.nuevoMensaje.notaMensaje = t))
-            }
-            .GridColumn(1)
-            .BackgroundColor(Colors.Blue);
+            };
         }
 
     }
@@ -195,7 +190,6 @@ public class PantallaDespacho : Component<estado_del_despacho, parametros_despac
     private async void EnviarMensaje(Mensaje msj)
     {
         msj.estado = Mensaje.Estado.Despachado;
-        msj.idMensaje = new Random().Next(0, 100);
 
         switch (State.tipoMensaje)
         {
@@ -212,17 +206,37 @@ public class PantallaDespacho : Component<estado_del_despacho, parametros_despac
                 break;
         }
 
-        // evento para guardar mensaje enviado
-        Props.mensajeEnviado.Invoke(msj);
 
         // obtener el servicio
         var servicio = Services.GetRequiredService<Servicios.IServicios>();
-        var respuesta = await servicio.EnviarMensaje(new SolicitudEnviarMensaje() { mensaje=msj });
-
-        if (respuesta.exito) 
+        foreach (var seleccionado in Props.empleadoConectadoSeleccionado)
         {
-            await ContainerPage.DisplayAlert("OK!", "Mensaje enviado", "ok");
+            var nuevo = new Mensaje()
+            {
+                 idMensaje = new Random().Next(0,1000),
+                 receptor = seleccionado,
+                 notaMensaje = msj.notaMensaje,
+                 emisor = msj.emisor,
+                 notificacion = msj.notificacion,
+                 receta = msj.receta,
+                 tareas = msj.tareas,
+                 actualizacion = msj.actualizacion,
+                 estado = Mensaje.Estado.Despachado
+            };
+
+
+            // evento para guardar mensaje enviado
+            Props.mensajeEnviado.Invoke(nuevo);
+
+            // enviamos el mensaje
+            await PantallaTablero.EnviarMensaje(nuevo);
         }
+
+        await ContainerPage.DisplayAlert("OK!", "Mensaje enviado", "ok");
+        await Navigation.PopAsync();
+
+        // limpiar el cuerpo de mensaje
+        SetState(s => s.nuevoMensaje=new Mensaje() { emisor = Props.empleadoOperativo });
     }
 
 
