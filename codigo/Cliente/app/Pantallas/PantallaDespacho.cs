@@ -2,7 +2,6 @@
 using MauiReactor;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using static app.Componentes.estado_del_despacho;
@@ -137,8 +136,10 @@ public class PantallaDespacho : Component<estado_del_despacho, parametros_despac
 
                     ,
 
-                new CollectionView()
-                    .ItemsSource(State.tareas, GraficarCajaTarea)
+                
+
+                //new CollectionView()
+                    //.ItemsSource(State.tareas, GraficarCajaTarea)
             };
 
             void AgregarTarea(object sender, EventArgs e) 
@@ -160,9 +161,9 @@ public class PantallaDespacho : Component<estado_del_despacho, parametros_despac
 
                             ,
 
-                        new Button("X")
+                        new Button("eliminar")
                             .TextColor(Colors.Black)
-                            .FontSize(30)
+                            .FontSize(20)
                             .OnClicked( () => SetState( s=> s.tareas.Remove(tarea)))
                     }
 
@@ -241,3 +242,6 @@ public class PantallaDespacho : Component<estado_del_despacho, parametros_despac
 
 
 }
+
+
+

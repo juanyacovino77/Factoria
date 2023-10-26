@@ -67,13 +67,16 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Maui.MediaElement" Version="2.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.8" />
-    <PackageReference Include="Reactor.Maui" Version="1.0.145" />
-    <PackageReference Include="Reactor.Maui.Canvas" Version="1.0.145" />
-    <PackageReference Include="Reactor.Maui.ScaffoldGenerator" Version="1.0.145" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="epj.Expander.Maui" Version="1.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.13" />
+    <PackageReference Include="Reactor.Maui" Version="1.0.146" />
+    <PackageReference Include="Reactor.Maui.Canvas" Version="1.0.146" />
+    <PackageReference Include="Reactor.Maui.ScaffoldGenerator" Version="1.0.146" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
     <PackageReference Include="SkiaSharp.Extended.UI.Maui" Version="2.0.0-preview.86" />
-    <PackageReference Include="Syncfusion.Maui.Popup" Version="23.1.40" />
+    <PackageReference Include="Syncfusion.Maui.Expander" Version="23.1.42" />
+    <PackageReference Include="Syncfusion.Maui.Popup" Version="23.1.42" />
+    <PackageReference Include="Syncfusion.Maui.ProgressBar" Version="23.1.42" />
 
   </ItemGroup>
   <ItemGroup>

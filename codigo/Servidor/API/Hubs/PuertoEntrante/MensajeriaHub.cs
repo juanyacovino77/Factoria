@@ -210,10 +210,77 @@ public class MensajeriaSinLogica : Hub, IMensajeriaHub
                      new Mensaje()
                      {
                          notaMensaje = "Este mensaje viene de SUPER",
-                         emisor = new Empleado(){ nombreEmpleado = "lula", nombreSector= "gestion"},
-                         tareas= new Tareas(){ },
+                         emisor = new Empleado(){ nombreEmpleado = "carmen", nombreSector = "COCINA"},
+                         tareas = new Tareas()
+                         {
+                             estado = Tareas.Estado.NoIniciado,
+                             tareas = new Tarea[]
+                             {
+                                 new Tarea()
+                                 {
+                                     estadoTarea = Tarea.Estado.NoRealizada,
+                                     instrucciones = "Limpiar los pisos"
+                                 },
+                                 new Tarea()
+                                 {
+                                     estadoTarea =  Tarea.Estado.NoRealizada,
+                                     instrucciones = "Hacer tres milanesass"
+                                 },
+                             },
+                         },
                          idMensaje = 3,
                      },
+
+                     new Mensaje()
+                     {
+                         idMensaje = 12,
+                         emisor = new Empleado(){ idEmpleado = 1, nombreEmpleado= "juamanuel"},
+                         proceso = new Proceso()
+                         {
+                             id = 254,
+                             estado = Proceso.Estado.NoIniciado,
+                             cadena = new Mensaje[]
+                             {
+                                 new Mensaje()
+                                 {
+                                      idMensaje = 1102,
+                                      emisor = new Empleado(){ idEmpleado = 1, nombreEmpleado= "juamanuel"},
+                                      receptor = new Empleado(){ idEmpleado= 2, nombreEmpleado ="susana"},
+                                      estado = Mensaje.Estado.NoDespachado,
+                                      notificacion = new Notificacion()
+                                      {
+                                           estadoActual = Notificacion.Estado.NoConfirmado,
+                                           texto= "Este es un aviso de que se inició el PP",
+                                      }
+                                 },
+                                 new Mensaje()
+                                 {
+                                      idMensaje = 1103,
+                                      emisor = new Empleado(){ idEmpleado = 1, nombreEmpleado= "juamanuel"},
+                                      receptor = new Empleado(){ idEmpleado= 3, nombreEmpleado ="karmen"},
+                                      estado = Mensaje.Estado.NoDespachado,
+                                      tareas = new Tareas()
+                                      {
+                                           estado= Tareas.Estado.NoIniciado,
+                                           tareas = new Tarea[]
+                                           {
+                                               new Tarea()
+                                               {
+                                                    estadoTarea = Tarea.Estado.NoRealizada,
+                                                    instrucciones = "Pasar los pisos"
+                                               },
+                                               new Tarea()
+                                               {
+                                                   estadoTarea = Tarea.Estado.NoRealizada,
+                                                   instrucciones = "Hacer 2k milanes"
+                                               }
+                                           }
+                                      }
+                                 }
+                             }
+                         },
+                         receptor = new Empleado(){idEmpleado=1, nombreEmpleado= "juamanuel"}
+                     }
                  },
 
         },
@@ -271,7 +338,24 @@ public class MensajeriaSinLogica : Hub, IMensajeriaHub
                      new Mensaje()
                      {
                          notaMensaje = "Este mensaje viene de SUPER",
-                         emisor = new Empleado(){ nombreEmpleado = "lula", nombreSector= "gestion"},
+                         emisor = new Empleado(){ nombreEmpleado = "carmen", nombreSector = "COCINA"},
+                         tareas = new Tareas()
+                         {
+                             estado = Tareas.Estado.NoIniciado,
+                             tareas = new Tarea[]
+                             {
+                                 new Tarea()
+                                 {
+                                     estadoTarea = Tarea.Estado.NoRealizada,
+                                     instrucciones = "Limpiar los pisos"
+                                 },
+                                 new Tarea()
+                                 {
+                                     estadoTarea =  Tarea.Estado.NoRealizada,
+                                     instrucciones = "Hacer tres milanesass"
+                                 },
+                             },
+                         },
                          idMensaje = 3,
                      },
                  },
@@ -331,7 +415,663 @@ public class MensajeriaSinLogica : Hub, IMensajeriaHub
                      new Mensaje()
                      {
                          notaMensaje = "Este mensaje viene de SUPER",
-                         emisor = new Empleado(){ nombreEmpleado = "lula", nombreSector= "gestion"},
+                         emisor = new Empleado(){ nombreEmpleado = "carmen", nombreSector = "COCINA"},
+                         tareas = new Tareas()
+                         {
+                             estado = Tareas.Estado.NoIniciado,
+                             tareas = new Tarea[]
+                             {
+                                 new Tarea()
+                                 {
+                                     estadoTarea = Tarea.Estado.NoRealizada,
+                                     instrucciones = "Limpiar los pisos"
+                                 },
+                                 new Tarea()
+                                 {
+                                     estadoTarea =  Tarea.Estado.NoRealizada,
+                                     instrucciones = "Hacer tres milanesass"
+                                 },
+                             },
+                         },
+                         idMensaje = 3,
+                     },
+                 },
+
+        },
+        new Operario()
+        {
+            datos = new Empleado()
+            {
+                 idEmpleado = 4,
+                 idSector = 2,
+                 nombreEmpleado = "Hector",
+                 nombreSector = "sistemas"
+            },
+            mensajes = new Mensaje[]
+                 {
+                     new Mensaje()
+                     {
+                         notaMensaje = "Este mensaje viene deL HIPER",
+                         emisor = new Empleado(){ nombreEmpleado = "MAXIMO", nombreSector="CARNICERIA"},
+                         notificacion= new Notificacion()
+                             {
+                                 estadoActual = Notificacion.Estado.NoConfirmado,
+                                 texto = "Nueva lista de tareas requeridas:",
+                                 urlImagen = "/imagen/limpia/pisos.png"
+                             },
+                         idMensaje = 1,
+                     },
+
+                     new Mensaje()
+                     {
+                         notaMensaje = "Este mensaje viene de FANTI",
+                         emisor = new Empleado(){ nombreEmpleado = "erni", nombreSector = "COCINA"},
+                         receta = new Receta()
+                         {
+                              pasos = new PasoReceta[]
+                              {
+                                  new PasoReceta()
+                                  {
+                                       paso="Conseguir 100g de aceite"
+                                  }
+                                  ,
+                                  new PasoReceta()
+                                  {
+                                      paso="Mezclar con huevo"
+                                  }
+                                  ,
+                                  new PasoReceta()
+                                  {
+                                      paso="Hacer 2kg milanes"
+                                  }
+                              }
+                         },
+                         idMensaje = 2,
+                     },
+
+                     new Mensaje()
+                     {
+                         notaMensaje = "Este mensaje viene de SUPER",
+                         emisor = new Empleado(){ nombreEmpleado = "carmen", nombreSector = "COCINA"},
+                         tareas = new Tareas()
+                         {
+                             estado = Tareas.Estado.NoIniciado,
+                             tareas = new Tarea[]
+                             {
+                                 new Tarea()
+                                 {
+                                     estadoTarea = Tarea.Estado.NoRealizada,
+                                     instrucciones = "Limpiar los pisos"
+                                 },
+                                 new Tarea()
+                                 {
+                                     estadoTarea =  Tarea.Estado.NoRealizada,
+                                     instrucciones = "Hacer tres milanesass"
+                                 },
+                             },
+                         },
+                         idMensaje = 3,
+                     },
+
+                     new Mensaje()
+                     {
+                         idMensaje = 12,
+                         emisor = new Empleado(){ idEmpleado = 1},
+                         proceso = new Proceso()
+                         {
+                             id = 254,
+                             estado = Proceso.Estado.NoIniciado,
+                             cadena = new Mensaje[]
+                             {
+                                 new Mensaje()
+                                 {
+                                      idMensaje = 1102,
+                                      emisor = new Empleado(){ idEmpleado = 1},
+                                      receptor = new Empleado(){ idEmpleado= 2},
+                                      estado = Mensaje.Estado.NoDespachado,
+                                      notificacion = new Notificacion()
+                                      {
+                                           estadoActual = Notificacion.Estado.NoConfirmado,
+                                           texto= "Este es un aviso de que se inició el PP",
+                                      }
+                                 },
+                                 new Mensaje()
+                                 {
+                                      idMensaje = 1103,
+                                      emisor = new Empleado(){ idEmpleado = 1},
+                                      receptor = new Empleado(){ idEmpleado= 3},
+                                      estado = Mensaje.Estado.NoDespachado,
+                                      tareas = new Tareas()
+                                      {
+                                           estado= Tareas.Estado.NoIniciado,
+                                           tareas = new Tarea[]
+                                           {
+                                               new Tarea()
+                                               {
+                                                    estadoTarea = Tarea.Estado.NoRealizada,
+                                                    instrucciones = "Pasar los pisos"
+                                               },
+                                               new Tarea()
+                                               {
+                                                   estadoTarea = Tarea.Estado.NoRealizada,
+                                                   instrucciones = "Hacer 2k milanes"
+                                               }
+                                           }
+                                      }
+                                 }
+                             }
+                         }
+                     }
+                 },
+
+        },
+        new Operario()
+        {
+            datos = new Empleado()
+            {
+                 idEmpleado = 5,
+                 idSector = 2,
+                 nombreEmpleado = "Jose",
+                 nombreSector = "carniceria"
+            },
+            mensajes = new Mensaje[]
+                 {
+                     new Mensaje()
+                     {
+                         notaMensaje = "Este mensaje viene deL HIPER",
+                         emisor = new Empleado(){ nombreEmpleado = "MAXIMO", nombreSector="CARNICERIA"},
+                         notificacion= new Notificacion()
+                             {
+                                 estadoActual = Notificacion.Estado.NoConfirmado,
+                                 texto = "Nueva lista de tareas requeridas:",
+                                 urlImagen = "/imagen/limpia/pisos.png"
+                             },
+                         idMensaje = 1,
+                     },
+
+                     new Mensaje()
+                     {
+                         notaMensaje = "Este mensaje viene de FANTI",
+                         emisor = new Empleado(){ nombreEmpleado = "erni", nombreSector = "COCINA"},
+                         receta = new Receta()
+                         {
+                              pasos = new PasoReceta[]
+                              {
+                                  new PasoReceta()
+                                  {
+                                       paso="Conseguir 100g de aceite"
+                                  }
+                                  ,
+                                  new PasoReceta()
+                                  {
+                                      paso="Mezclar con huevo"
+                                  }
+                                  ,
+                                  new PasoReceta()
+                                  {
+                                      paso="Hacer 2kg milanes"
+                                  }
+                              }
+                         },
+                         idMensaje = 2,
+                     },
+
+                     new Mensaje()
+                     {
+                         notaMensaje = "Este mensaje viene de SUPER",
+                         emisor = new Empleado(){ nombreEmpleado = "carmen", nombreSector = "COCINA"},
+                         tareas = new Tareas()
+                         {
+                             estado = Tareas.Estado.NoIniciado,
+                             tareas = new Tarea[]
+                             {
+                                 new Tarea()
+                                 {
+                                     estadoTarea = Tarea.Estado.NoRealizada,
+                                     instrucciones = "Limpiar los pisos"
+                                 },
+                                 new Tarea()
+                                 {
+                                     estadoTarea =  Tarea.Estado.NoRealizada,
+                                     instrucciones = "Hacer tres milanesass"
+                                 },
+                             },
+                         },
+                         idMensaje = 3,
+                     },
+                 },
+
+        },
+        new Operario()
+        {
+            datos = new Empleado()
+            {
+                 idEmpleado = 6,
+                 idSector = 2,
+                 nombreEmpleado = "Alicia",
+                 nombreSector = "cocina"
+            },
+            mensajes = new Mensaje[]
+                 {
+                     new Mensaje()
+                     {
+                         notaMensaje = "Este mensaje viene deL HIPER",
+                         emisor = new Empleado(){ nombreEmpleado = "MAXIMO", nombreSector="CARNICERIA"},
+                         notificacion= new Notificacion()
+                             {
+                                 estadoActual = Notificacion.Estado.NoConfirmado,
+                                 texto = "Nueva lista de tareas requeridas:",
+                                 urlImagen = "/imagen/limpia/pisos.png"
+                             },
+                         idMensaje = 1,
+                     },
+
+                     new Mensaje()
+                     {
+                         notaMensaje = "Este mensaje viene de FANTI",
+                         emisor = new Empleado(){ nombreEmpleado = "erni", nombreSector = "COCINA"},
+                         receta = new Receta()
+                         {
+                              pasos = new PasoReceta[]
+                              {
+                                  new PasoReceta()
+                                  {
+                                       paso="Conseguir 100g de aceite"
+                                  }
+                                  ,
+                                  new PasoReceta()
+                                  {
+                                      paso="Mezclar con huevo"
+                                  }
+                                  ,
+                                  new PasoReceta()
+                                  {
+                                      paso="Hacer 2kg milanes"
+                                  }
+                              }
+                         },
+                         idMensaje = 2,
+                     },
+
+                     new Mensaje()
+                     {
+                         notaMensaje = "Este mensaje viene de SUPER",
+                         emisor = new Empleado(){ nombreEmpleado = "carmen", nombreSector = "COCINA"},
+                         tareas = new Tareas()
+                         {
+                             estado = Tareas.Estado.NoIniciado,
+                             tareas = new Tarea[]
+                             {
+                                 new Tarea()
+                                 {
+                                     estadoTarea = Tarea.Estado.NoRealizada,
+                                     instrucciones = "Limpiar los pisos"
+                                 },
+                                 new Tarea()
+                                 {
+                                     estadoTarea =  Tarea.Estado.NoRealizada,
+                                     instrucciones = "Hacer tres milanesass"
+                                 },
+                             },
+                         },
+                         idMensaje = 3,
+                     },
+                 },
+
+        },
+        new Operario()
+        {
+            datos = new Empleado()
+            {
+                 idEmpleado = 7,
+                 idSector = 2,
+                 nombreEmpleado = "Agustin",
+                 nombreSector = "sistemas"
+            },
+            mensajes = new Mensaje[]
+                 {
+                     new Mensaje()
+                     {
+                         notaMensaje = "Este mensaje viene deL HIPER",
+                         emisor = new Empleado(){ nombreEmpleado = "MAXIMO", nombreSector="CARNICERIA"},
+                         notificacion= new Notificacion()
+                             {
+                                 estadoActual = Notificacion.Estado.NoConfirmado,
+                                 texto = "Nueva lista de tareas requeridas:",
+                                 urlImagen = "/imagen/limpia/pisos.png"
+                             },
+                         idMensaje = 1,
+                     },
+
+                     new Mensaje()
+                     {
+                         notaMensaje = "Este mensaje viene de FANTI",
+                         emisor = new Empleado(){ nombreEmpleado = "erni", nombreSector = "COCINA"},
+                         receta = new Receta()
+                         {
+                              pasos = new PasoReceta[]
+                              {
+                                  new PasoReceta()
+                                  {
+                                       paso="Conseguir 100g de aceite"
+                                  }
+                                  ,
+                                  new PasoReceta()
+                                  {
+                                      paso="Mezclar con huevo"
+                                  }
+                                  ,
+                                  new PasoReceta()
+                                  {
+                                      paso="Hacer 2kg milanes"
+                                  }
+                              }
+                         },
+                         idMensaje = 2,
+                     },
+
+                     new Mensaje()
+                     {
+                         notaMensaje = "Este mensaje viene de SUPER",
+                         emisor = new Empleado(){ nombreEmpleado = "carmen", nombreSector = "COCINA"},
+                         tareas = new Tareas()
+                         {
+                             estado = Tareas.Estado.NoIniciado,
+                             tareas = new Tarea[]
+                             {
+                                 new Tarea()
+                                 {
+                                     estadoTarea = Tarea.Estado.NoRealizada,
+                                     instrucciones = "Limpiar los pisos"
+                                 },
+                                 new Tarea()
+                                 {
+                                     estadoTarea =  Tarea.Estado.NoRealizada,
+                                     instrucciones = "Hacer tres milanesass"
+                                 },
+                             },
+                         },
+                         idMensaje = 3,
+                     },
+
+                     new Mensaje()
+                     {
+                         idMensaje = 12,
+                         emisor = new Empleado(){ idEmpleado = 1},
+                         proceso = new Proceso()
+                         {
+                             id = 254,
+                             estado = Proceso.Estado.NoIniciado,
+                             cadena = new Mensaje[]
+                             {
+                                 new Mensaje()
+                                 {
+                                      idMensaje = 1102,
+                                      emisor = new Empleado(){ idEmpleado = 1},
+                                      receptor = new Empleado(){ idEmpleado= 2},
+                                      estado = Mensaje.Estado.NoDespachado,
+                                      notificacion = new Notificacion()
+                                      {
+                                           estadoActual = Notificacion.Estado.NoConfirmado,
+                                           texto= "Este es un aviso de que se inició el PP",
+                                      }
+                                 },
+                                 new Mensaje()
+                                 {
+                                      idMensaje = 1103,
+                                      emisor = new Empleado(){ idEmpleado = 1},
+                                      receptor = new Empleado(){ idEmpleado= 3},
+                                      estado = Mensaje.Estado.NoDespachado,
+                                      tareas = new Tareas()
+                                      {
+                                           estado= Tareas.Estado.NoIniciado,
+                                           tareas = new Tarea[]
+                                           {
+                                               new Tarea()
+                                               {
+                                                    estadoTarea = Tarea.Estado.NoRealizada,
+                                                    instrucciones = "Pasar los pisos"
+                                               },
+                                               new Tarea()
+                                               {
+                                                   estadoTarea = Tarea.Estado.NoRealizada,
+                                                   instrucciones = "Hacer 2k milanes"
+                                               }
+                                           }
+                                      }
+                                 }
+                             }
+                         }
+                     }
+                 },
+
+        },
+        new Operario()
+        {
+            datos = new Empleado()
+            {
+                 idEmpleado = 8,
+                 idSector = 2,
+                 nombreEmpleado = "Gustavo",
+                 nombreSector = "carniceria"
+            },
+            mensajes = new Mensaje[]
+                 {
+                     new Mensaje()
+                     {
+                         notaMensaje = "Este mensaje viene deL HIPER",
+                         emisor = new Empleado(){ nombreEmpleado = "MAXIMO", nombreSector="CARNICERIA"},
+                         notificacion= new Notificacion()
+                             {
+                                 estadoActual = Notificacion.Estado.NoConfirmado,
+                                 texto = "Nueva lista de tareas requeridas:",
+                                 urlImagen = "/imagen/limpia/pisos.png"
+                             },
+                         idMensaje = 1,
+                     },
+
+                     new Mensaje()
+                     {
+                         notaMensaje = "Este mensaje viene de FANTI",
+                         emisor = new Empleado(){ nombreEmpleado = "erni", nombreSector = "COCINA"},
+                         receta = new Receta()
+                         {
+                              pasos = new PasoReceta[]
+                              {
+                                  new PasoReceta()
+                                  {
+                                       paso="Conseguir 100g de aceite"
+                                  }
+                                  ,
+                                  new PasoReceta()
+                                  {
+                                      paso="Mezclar con huevo"
+                                  }
+                                  ,
+                                  new PasoReceta()
+                                  {
+                                      paso="Hacer 2kg milanes"
+                                  }
+                              }
+                         },
+                         idMensaje = 2,
+                     },
+
+                     new Mensaje()
+                     {
+                         notaMensaje = "Este mensaje viene de SUPER",
+                         emisor = new Empleado(){ nombreEmpleado = "carmen", nombreSector = "COCINA"},
+                         tareas = new Tareas()
+                         {
+                             estado = Tareas.Estado.NoIniciado,
+                             tareas = new Tarea[]
+                             {
+                                 new Tarea()
+                                 {
+                                     estadoTarea = Tarea.Estado.NoRealizada,
+                                     instrucciones = "Limpiar los pisos"
+                                 },
+                                 new Tarea()
+                                 {
+                                     estadoTarea =  Tarea.Estado.NoRealizada,
+                                     instrucciones = "Hacer tres milanesass"
+                                 },
+                             },
+                         },
+                         idMensaje = 3,
+                     },
+                 },
+
+        },
+        new Operario()
+        {
+            datos = new Empleado()
+            {
+                 idEmpleado = 9,
+                 idSector = 2,
+                 nombreEmpleado = "Sofia",
+                 nombreSector = "cocina"
+            },
+            mensajes = new Mensaje[]
+                 {
+                     new Mensaje()
+                     {
+                         notaMensaje = "Este mensaje viene deL HIPER",
+                         emisor = new Empleado(){ nombreEmpleado = "MAXIMO", nombreSector="CARNICERIA"},
+                         notificacion= new Notificacion()
+                             {
+                                 estadoActual = Notificacion.Estado.NoConfirmado,
+                                 texto = "Nueva lista de tareas requeridas:",
+                                 urlImagen = "/imagen/limpia/pisos.png"
+                             },
+                         idMensaje = 1,
+                     },
+
+                     new Mensaje()
+                     {
+                         notaMensaje = "Este mensaje viene de FANTI",
+                         emisor = new Empleado(){ nombreEmpleado = "erni", nombreSector = "COCINA"},
+                         receta = new Receta()
+                         {
+                              pasos = new PasoReceta[]
+                              {
+                                  new PasoReceta()
+                                  {
+                                       paso="Conseguir 100g de aceite"
+                                  }
+                                  ,
+                                  new PasoReceta()
+                                  {
+                                      paso="Mezclar con huevo"
+                                  }
+                                  ,
+                                  new PasoReceta()
+                                  {
+                                      paso="Hacer 2kg milanes"
+                                  }
+                              }
+                         },
+                         idMensaje = 2,
+                     },
+
+                     new Mensaje()
+                     {
+                         notaMensaje = "Este mensaje viene de SUPER",
+                         emisor = new Empleado(){ nombreEmpleado = "carmen", nombreSector = "COCINA"},
+                         tareas = new Tareas()
+                         {
+                             estado = Tareas.Estado.NoIniciado,
+                             tareas = new Tarea[]
+                             {
+                                 new Tarea()
+                                 {
+                                     estadoTarea = Tarea.Estado.NoRealizada,
+                                     instrucciones = "Limpiar los pisos"
+                                 },
+                                 new Tarea()
+                                 {
+                                     estadoTarea =  Tarea.Estado.NoRealizada,
+                                     instrucciones = "Hacer tres milanesass"
+                                 },
+                             },
+                         },
+                         idMensaje = 3,
+                     },
+                 },
+
+        },
+        new Operario()
+        {
+            datos = new Empleado()
+            {
+                 idEmpleado = 10,
+                 idSector = 2,
+                 nombreEmpleado = "Mariela",
+                 nombreSector = "cocina"
+            },
+            mensajes = new Mensaje[]
+                 {
+                     new Mensaje()
+                     {
+                         notaMensaje = "Este mensaje viene deL HIPER",
+                         emisor = new Empleado(){ nombreEmpleado = "MAXIMO", nombreSector="CARNICERIA"},
+                         notificacion= new Notificacion()
+                             {
+                                 estadoActual = Notificacion.Estado.NoConfirmado,
+                                 texto = "Nueva lista de tareas requeridas:",
+                                 urlImagen = "/imagen/limpia/pisos.png"
+                             },
+                         idMensaje = 1,
+                     },
+
+                     new Mensaje()
+                     {
+                         notaMensaje = "Este mensaje viene de FANTI",
+                         emisor = new Empleado(){ nombreEmpleado = "erni", nombreSector = "COCINA"},
+                         receta = new Receta()
+                         {
+                              pasos = new PasoReceta[]
+                              {
+                                  new PasoReceta()
+                                  {
+                                       paso="Conseguir 100g de aceite"
+                                  }
+                                  ,
+                                  new PasoReceta()
+                                  {
+                                      paso="Mezclar con huevo"
+                                  }
+                                  ,
+                                  new PasoReceta()
+                                  {
+                                      paso="Hacer 2kg milanes"
+                                  }
+                              }
+                         },
+                         idMensaje = 2,
+                     },
+
+                     new Mensaje()
+                     {
+                         notaMensaje = "Este mensaje viene de SUPER",
+                         emisor = new Empleado(){ nombreEmpleado = "carmen", nombreSector = "COCINA"},
+                         tareas = new Tareas()
+                         {
+                             estado = Tareas.Estado.NoIniciado,
+                             tareas = new Tarea[]
+                             {
+                                 new Tarea()
+                                 {
+                                     estadoTarea = Tarea.Estado.NoRealizada,
+                                     instrucciones = "Limpiar los pisos"
+                                 },
+                                 new Tarea()
+                                 {
+                                     estadoTarea =  Tarea.Estado.NoRealizada,
+                                     instrucciones = "Hacer tres milanesass"
+                                 },
+                             },
+                         },
                          idMensaje = 3,
                      },
                  },
@@ -388,7 +1128,7 @@ public class MensajeriaSinLogica : Hub, IMensajeriaHub
 
     public async Task<RespuestaEnviarMensaje> EnviarMensaje(SolicitudEnviarMensaje solicitud)
     {
-        if (solicitud.mensaje is { emisor: null, receptor:null }) return new RespuestaEnviarMensaje() { exito = false, respuesta= "Mensaje incompleto"};
+        if (solicitud.mensaje is { emisor: null } || solicitud.mensaje is { receptor:null }) return new RespuestaEnviarMensaje() { exito = false, respuesta= "Mensaje incompleto"};
 
         // logica de reenvio de mensajes a los clientes, segun id, grupo, sector, etc
         var idEmpleado = solicitud.mensaje.receptor.idEmpleado;

@@ -1,5 +1,7 @@
 ﻿using app.Componentes;
+using app.Pantallas.Componentes;
 using CommunityToolkit.Maui;
+using epj.Expander.Maui;
 using MauiReactor;
 using Microsoft.Extensions.DependencyInjection;
 using SkiaSharp.Views.Maui.Controls.Hosting;
@@ -13,6 +15,7 @@ namespace app
         public static MauiApp CreateMauiApp()
         {
             var builder = MauiApp.CreateBuilder();
+            Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Mjc4MDE3NEAzMjMzMmUzMDJlMzBNdGtDSllZZ1FxT2lOSjFKYXhXUmtPVFpneFR2bCtzUS9FbFBHQlBPdFVVPQ==");
 
             builder
                 .UseMauiReactorApp<PantallaInicio>(app =>
@@ -24,6 +27,8 @@ namespace app
                 })
                 .UseSkiaSharp()
                 .UseMauiCommunityToolkitMediaElement()
+                .ConfigureSyncfusionCore()
+                .UseExpander()
                 
                 #if DEBUG
                 .EnableMauiReactorHotReload()
@@ -38,7 +43,6 @@ namespace app
             builder.Services.AddSingleton<Servicios.IServicios, Servicios.Servidor>(); // usa conexión al servidor real
             //builder.Services.AddSingleton<Servicios.IServicios, Servicios.Mock>(); // usa datos de ensayo
 
-            builder.ConfigureSyncfusionCore();
 
             return builder.Build();
 

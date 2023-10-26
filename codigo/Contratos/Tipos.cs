@@ -3,7 +3,7 @@ namespace Contratos;
 
 /* 
  * CONTRATOS PARA LA TRANSFERENCIA DE DATOS SERIALIZABLES ENTRE EL CLIENTE Y EL SERVIDOR
- * (solo para eso, ni el servidor ni el cliente tienen que acoplarse a estos contratos internamente)
+ * (solo para eso, ni el servidor ni el cliente tendrian que acoplarse a estos contratos)
  */
 
 
@@ -59,6 +59,43 @@ public class Tareas
     }
     public Estado estado { get; set; }
     public Tarea[] tareas { get; set; }
+
+
+    public int Cantidad()
+    {
+        return tareas.Length;
+    }
+    public int Progreso()
+    {
+        return tareas.Count(t => t.Realizada());
+    }
+
+    public bool EnPreparacion()
+    {
+        return estado is Estado.EnPreparacion;
+    }
+    public bool EnFinalizado()
+    {
+        return estado is Estado.Finalizado;
+    }
+
+    public Tareas PonerEnPreparacion()
+    {
+        estado = Estado.EnPreparacion;
+        return this;
+    }
+    public Tareas PonerEnRechazado()
+    {
+        estado = Estado.Rechazado;
+        return this;
+    }
+    public Tareas PonerEnFinalizado()
+    {
+        if (tareas.All(t => t.Realizada()))
+            estado = Estado.Finalizado;
+
+        return this;
+    }
 }
 public class Tarea
 {
@@ -69,6 +106,11 @@ public class Tarea
     }
     public string instrucciones { get; set; }
     public Estado estadoTarea { get; set; }
+
+    public bool Realizada()
+    {
+        return estadoTarea is Estado.Realizada;
+    }
 }
 public class Receta 
 {
@@ -78,6 +120,47 @@ public class PasoReceta
 {
     public string paso { get; set; }
     public string urlImagen { get; set; }
+}
+public class Proceso
+{
+    public enum Estado
+    {
+        NoIniciado = 0,
+        EnProceso = 1,
+        Completado = 3
+    }
+    public int id { get; set; }
+    public Estado estado { get; set; }
+    public Mensaje[] cadena { get; set; }
+
+
+    public Mensaje IniciarProceso()
+    {
+        return cadena.First();
+    }
+    public Mensaje? Procesar(Mensaje msj)
+    {
+        var i = Array.FindIndex(cadena, m => m.idMensaje == msj.idMensaje);
+        var m = cadena[i];
+        var ultimo = (i > -1) && i == cadena.Length - 1;
+
+        if (msj.tareas is { estado: Tareas.Estado.Finalizado } 
+            || msj.notificacion is { estadoActual: Notificacion.Estado.Confirmado})
+
+            if (ultimo) estado = Estado.Completado;
+            else return cadena[i + 1];
+
+        return null;
+    }
+    public Proceso PonerEnProceso()
+    {
+        estado = Estado.EnProceso;
+        return this;
+    }
+}
+public class Conversacion
+{
+    public Notificacion[] chats { get; set; }
 }
 public class Mensaje
 {
@@ -96,6 +179,8 @@ public class Mensaje
     public Tareas? tareas { get; set; }
     public Receta? receta { get; set; }
     public Notificacion? notificacion { get; set; }
+    public Proceso? proceso { get; set; }
+
     public Mensaje? actualizacion { get; set; }
 
     public Empleado emisor { get; set; }
