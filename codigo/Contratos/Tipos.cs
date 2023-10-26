@@ -1,4 +1,6 @@
 ﻿
+using System.Collections.ObjectModel;
+
 namespace Contratos; 
 
 /* 
@@ -141,6 +143,10 @@ public class Proceso
     public Mensaje? Procesar(Mensaje msj)
     {
         var i = Array.FindIndex(cadena, m => m.idMensaje == msj.idMensaje);
+        if (i == -1)
+        {
+            return null;
+        }
         var m = cadena[i];
         var ultimo = (i > -1) && i == cadena.Length - 1;
 
@@ -160,7 +166,7 @@ public class Proceso
 }
 public class Conversacion
 {
-    public Notificacion[] chats { get; set; }
+    public ObservableCollection<Mensaje> mensajesDeTexto { get; set; }
 }
 public class Mensaje
 {
@@ -180,6 +186,7 @@ public class Mensaje
     public Receta? receta { get; set; }
     public Notificacion? notificacion { get; set; }
     public Proceso? proceso { get; set; }
+    public Conversacion? conversa { get; set; }
 
     public Mensaje? actualizacion { get; set; }
 

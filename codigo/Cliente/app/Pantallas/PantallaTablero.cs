@@ -49,42 +49,45 @@ public class estado_del_tablero
         lista[i].notificacion = msjNuevo.actualizacion.notificacion;
         lista[i].receta = msjNuevo.actualizacion.receta;
         lista[i].tareas = msjNuevo.actualizacion.tareas;
+        lista[i].conversa?.mensajesDeTexto.Add(msjNuevo.actualizacion.conversa.mensajesDeTexto.LastOrDefault());
         lista[i].estado = msjNuevo.actualizacion.estado;
 
         // Pertenece a un Proceso Productivo?
         // Buscar pp en la lista de recibidos
         // quiero obtener el proceso que contiene a este msj nuevo.actualizacion
-        ProcesarMensajeDeProceso();
+        /*
 
-        void ProcesarMensajeDeProceso()
+ProcesarMensajeDeProceso();
+void ProcesarMensajeDeProceso()
+{
+    Proceso proceso = new();
+    foreach (var m in mensajes)
+    {
+        if (m.proceso is null) continue;
+        var esDelProceso = m.proceso.cadena.Any(m => m.idMensaje == msjNuevo.actualizacion.idMensaje);
+        if (esDelProceso)
         {
-            Proceso proceso = new();
-            foreach (var m in mensajes)
-            {
-                if (m.proceso is null) continue;
-                var esDelProceso = m.proceso.cadena.Any(m => m.idMensaje == msjNuevo.actualizacion.idMensaje);
-                if (esDelProceso)
-                {
-                    proceso = m.proceso;
-                    break;
-                }
-            }
-
-            if (proceso is not null)
-            {
-                var msjAEnviar = proceso.Procesar(msjNuevo.actualizacion);
-                if (msjAEnviar is not null)
-                {
-                    SolicitarEnviarMensaje(msjAEnviar);
-                }
-            }
-
-            async void SolicitarEnviarMensaje(Mensaje m)
-            {
-                await PantallaTablero.EnviarMensaje(m);
-                AñadirOActualizarMensaje(m);
-            }
+            proceso = m.proceso;
+            break;
         }
+    }
+
+    if (proceso is not null)
+    {
+        var msjAEnviar = proceso.Procesar(msjNuevo.actualizacion);
+        if (msjAEnviar is not null)
+        {
+            SolicitarEnviarMensaje(msjAEnviar);
+        }
+    }
+
+    async void SolicitarEnviarMensaje(Mensaje m)
+    {
+        await PantallaTablero.EnviarMensaje(m);
+        AñadirOActualizarMensaje(m);
+    }
+}
+*/
     }
 }
 public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
@@ -170,21 +173,60 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
 
                            ,
 
-                       new ImageButton("icono_de_usuario2.png")
-                           .HeightRequest(80)
-                           .HStart()
-                           .Margin(10)
+                      new HStack()
+                      {
+                           new ImageButton("icono_de_usuario2.png")
+                               .HeightRequest(80)
+                               .HStart()
+                               .Margin(10)
+                               ,
+
+                           new VStack()
+                           {
+                               new Label("Hoy confirmaste notificaciones!").TextColor(Colors.White),
+                                new LineaProgreso()
+                                .HStart()
+                                .VStart()
+                                .TrackFill(Colors.Grey)
+                                .WidthRequest(150)
+                                .Margin(10)
+                                .SegmentCount(State.mensajes.Count(m => m.notificacion is not null))
+                                .Progress(State.mensajes.Count(m => m.notificacion?.estadoActual is Notificacion.Estado.Confirmado))
+                                .IsIndeterminate(true)
+
+                                    ,
+
+                               new Label("Hoy completaste tareas!").TextColor(Colors.White),
+                               new LineaProgreso()
+                                .HStart()
+                                .VCenter()
+                                .TrackFill(Colors.Grey)
+                                .WidthRequest(150)
+                                .Margin(10)
+                                .SegmentCount(State.mensajes.Count(m => m.tareas is not null))
+                                .Progress(State.mensajes.Count(m => m.tareas?.estado is Tareas.Estado.Finalizado))
+                                .IsIndeterminate(true)
+                           }
+                           .VCenter()
+
+
+
+                      }
+
+
+
+                           ,
+
+
                     }
                     .HStart()
                     ,
 
                     new HStack()
                     {
-                        new LineaProgreso()
-                            .HStart()
-                            .TrackFill(Colors.Grey)
+
                         
-                        , 
+                        
                        
                        
 
@@ -195,9 +237,10 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
                                 .IsOpen(() => State.IsPopupOpen)
                                 .OnClosed(()=>SetState(s => s.IsPopupOpen = false, false))
                                 .AnimationMode(PopupAnimationMode.SlideOnRight)
-                                .AnimationDuration(130)
+                                .AnimationDuration(130),
 
-                                ,
+
+
 
                        new ImageButton("icono_conectados4.png")
                                .OnClicked(() => SetState(s => s.IsPopupOpen = true, false))
@@ -438,6 +481,7 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
                     { tareas: not null } => GraficarTareas(msj.tareas),
                     { receta: not null } => GraficarReceta(msj.receta),
                     { proceso: not null } => GraficarProceso(msj.proceso),
+                    { conversa: not null } => GraficarConversacion(msj.conversa),
                     _ => new VStack()
                 }
             }
@@ -587,7 +631,7 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
                             .Progress(tareas.Progreso() * 100 / tareas.Cantidad())
                             .ProgressThickness(10)
                             .SegmentGapWidth(3)
-                            
+
                         ,
 
                         new Label($"{tareas.estado}")
@@ -733,6 +777,109 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
                 }
                 ;
             }
+            VisualNode GraficarConversacion(Conversacion conversa)
+            {
+                MauiControls.Entry entryRef = new();
+
+                return new VStack()
+                {
+                    new HStack()
+                    {
+
+                        new Label("Conversación")
+                            .FontAttributes(MauiControls.FontAttributes.Bold)
+                            .TextDecorations(TextDecorations.Underline)
+                            .Padding(10)
+                            .FontSize(30)
+                            .FontFamily("Italic")
+                            .TextColor(Colors.Black)
+                            .HCenter()
+                            .VCenter()
+                    }
+                    ,
+
+                    new Grid("*", "*")
+                    {
+                         new CollectionView()
+                            .ItemsSource(conversa.mensajesDeTexto, GraficarMensajeTexto)
+                            .ItemsUpdatingScrollMode(MauiControls.ItemsUpdatingScrollMode.KeepLastItemInView)
+                            .VerticalScrollBarVisibility(ScrollBarVisibility.Always)
+                            .OnLoaded((sender, args) =>
+                            {
+                                if (conversa.mensajesDeTexto.Count > 0)
+                                {
+                                    ContainerPage?.Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(100), () =>
+                                        ((MauiControls.CollectionView?)sender)?.ScrollTo(conversa.mensajesDeTexto[^1]));
+                                }
+                            })
+                            
+
+                    }
+                        .HeightRequest(300)
+
+                        ,
+
+                        new Entry(r => entryRef = r)
+                            .Placeholder("Escriba un mensaje...")
+                            .TextColor(Colors.Black)
+                            .PlaceholderColor(Colors.White)
+                            .OnCompleted(
+                            () => {
+                                conversa.mensajesDeTexto.Add(new Mensaje()
+                                {
+                                    notaMensaje= entryRef.Text,
+                                    emisor = State.empleadoOperativo,
+                                    receptor = State.mensajeSeleccionado.receptor,
+                                });
+                                ActualizarEstadoCuerpoMensaje(conversa);
+                                entryRef.Text = "";
+
+                            })
+                            .VEnd()
+                            .MaxLength(50)
+
+                }
+                ;
+                VisualNode GraficarMensajeTexto(Mensaje m)
+                {
+                    return
+
+                        new HStack()
+                        {
+                        new Border()
+                        {
+                            new HStack()
+                            {
+                                 new Label($"{m.emisor.nombreEmpleado.ToUpper()}")
+                                .FontSize(15)
+                                .FontAttributes(MauiControls.FontAttributes.Bold)
+                                .TextDecorations(TextDecorations.Underline)
+                                .Margin(5)
+
+                                ,
+
+                                new Label($"{m.notaMensaje}")
+                                .FontSize(15)
+                                .FontAttributes(MauiControls.FontAttributes.Italic)
+                                .TextColor(Colors.DarkGrey)
+                                .Margin(5)
+                            }.VCenter()
+                        }
+                        .BackgroundColor(Colors.Black)
+                        .StrokeCornerRadius(10,0,0,10)
+                        .Stroke(Colors.BlueViolet)
+                        .StrokeThickness(2)
+                        .HeightRequest(50)
+                        .VCenter()
+                        }
+                        .Margin(2)
+                        .HeightRequest(50)
+                        .FlowDirection(m.emisor.idEmpleado == State.empleadoOperativo.idEmpleado ? FlowDirection.RightToLeft : FlowDirection.LeftToRight)
+                        ;
+
+                }
+
+            }
 
             async void IniciarProceso(Proceso proceso)
             {
@@ -769,6 +916,9 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
                     case Proceso p:
                         SetState(s => s.mensajeSeleccionado.proceso = p);
                         return;
+                    case Conversacion c:
+                        SetState(s => s.mensajeSeleccionado.conversa = c);
+                        break;
                     default:
                         break;
                 }
@@ -783,6 +933,19 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
                     receptor = msj.emisor,
                     actualizacion = msj
                 };
+
+                if (State.mensajeSeleccionado.conversa is not null)
+                {
+                    if (State.mensajeSeleccionado.emisor.idEmpleado == State.empleadoOperativo.idEmpleado)
+                    {
+                        mensaje = new Mensaje()
+                        {
+                            emisor = State.mensajeSeleccionado.emisor,
+                            receptor = State.mensajeSeleccionado.receptor,
+                            actualizacion = msj
+                        };
+                    }
+                }
 
                 await PantallaTablero.EnviarMensaje(mensaje);
             }

@@ -2,6 +2,7 @@
 using MauiReactor;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using static app.Componentes.estado_del_despacho;
@@ -22,7 +23,8 @@ public class estado_del_despacho
     {
         Notificacion = 1,
         Tareas = 2,
-        Receta = 3
+        Receta = 3,
+        Conversa = 4
     }
     public Mensaje nuevoMensaje { get; set; } = new Mensaje();
     public ObservableCollection<Tarea> tareas { get; set; } = new ObservableCollection<Tarea>();
@@ -34,6 +36,7 @@ public class estado_del_despacho
         nuevoMensaje.notificacion = null;
         nuevoMensaje.receta = null;
         nuevoMensaje.tareas = null;
+        nuevoMensaje.conversa = null;
     }
 }
 public class PantallaDespacho : Component<estado_del_despacho, parametros_despacho>
@@ -201,7 +204,10 @@ public class PantallaDespacho : Component<estado_del_despacho, parametros_despac
                 msj.tareas = new Tareas() { tareas = State.tareas.ToArray() };
                 break;
             case Cuerpo.Receta:
-                msj.receta = new Receta();
+                msj.receta = new Receta() { };
+                break;
+            case Cuerpo.Conversa:
+                msj.conversa = new Conversacion() { mensajesDeTexto = new ObservableCollection<Mensaje>() };
                 break;
             default:
                 break;
@@ -222,6 +228,7 @@ public class PantallaDespacho : Component<estado_del_despacho, parametros_despac
                  receta = msj.receta,
                  tareas = msj.tareas,
                  actualizacion = msj.actualizacion,
+                 conversa = msj.conversa,
                  estado = Mensaje.Estado.Despachado
             };
 
