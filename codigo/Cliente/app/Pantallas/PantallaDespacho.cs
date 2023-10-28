@@ -2,7 +2,6 @@
 using MauiReactor;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using static app.Componentes.estado_del_despacho;
@@ -47,18 +46,25 @@ public class PantallaDespacho : Component<estado_del_despacho, parametros_despac
     }
     public override VisualNode Render()
     {
+        string nombres = "";
+        Props.empleadoConectadoSeleccionado.ToList().ForEach(e => nombres += $"{e.nombreEmpleado}, ");
         return
             new ContentPage()
             {
-                new Grid("*", "auto"){
+                new Grid("*", "*"){
 
                     new VStack()
                     {
-                       
-                            new Label($"{Props.empleadoOperativo.nombreEmpleado} le estas enviando un mensaje a:" +
-                            $" {Props.empleadoConectadoSeleccionado.SelectMany(s => {return s.nombreEmpleado; })}")
-                            .FontSize(10)
-                            .TextColor(Colors.White).Margin(20)
+                        new Label("Despacho de mensajes")
+                                .FontSize(40)
+                                .FontAttributes(MauiControls.FontAttributes.Bold)
+                                .TextDecorations(TextDecorations.Underline)
+                                ,
+
+                        new Label($"Estas redactando un nuevo mensaje para: {nombres}")
+                            .Margin(10)
+                            .FontAttributes(MauiControls.FontAttributes.Bold)
+                            .TextColor(Colors.Black)
                         ,
 
                         new HStack()
@@ -67,17 +73,21 @@ public class PantallaDespacho : Component<estado_del_despacho, parametros_despac
                                 .Title("Tipo de mensaje")
                                 .ItemsSource(Enum.GetValues<Cuerpo>().Select(c => c.ToString()).ToList())
                                 .OnSelectedIndexChanged(i => SetState(s=>s.tipoMensaje=(Cuerpo)i+1))
+                                .TextColor(Colors.Black)
+                                .TitleColor(Colors.Black)
+                                .Margin(10)
                                 .BackgroundColor(Colors.Grey)
-
+                                .HStart()
                                 ,
 
                             new ImageButton("icono_mensaje3.png")
-                                .HeightRequest(50)
-                                .WidthRequest(50)
+                                .HeightRequest(80)
+                                .WidthRequest(80)
                                 .OnClicked(() => EnviarMensaje(State.nuevoMensaje))
-                                .Margin(10)
-                                .HCenter()
-                        }
+                                .Margin(50,0,0,0)
+                                .HEnd()
+
+                        }.HFill()
 
                         ,
 
@@ -86,15 +96,16 @@ public class PantallaDespacho : Component<estado_del_despacho, parametros_despac
                             Cuerpo.Notificacion => GraficarFormularioNotificacion(),
                             Cuerpo.Tareas => GraficarFormularioTareas(),
                             Cuerpo.Receta => GraficarFormularioReceta(),
+                            Cuerpo.Conversa => GraficarFormularioConversacion(),
                             _ => GraficarFormularioNotificacion()
                         }
 
                     }
                     .HCenter()
-                    .Padding(20)
-                    .Margin(30)
                 }
-            };
+            }
+            .BackgroundColor(Colors.CornflowerBlue)
+            ;
 
 
         VisualNode GraficarFormularioNotificacion() 
@@ -139,10 +150,10 @@ public class PantallaDespacho : Component<estado_del_despacho, parametros_despac
 
                     ,
 
-                
 
-                //new CollectionView()
-                    //.ItemsSource(State.tareas, GraficarCajaTarea)
+
+                new CollectionView()
+                    .ItemsSource(State.tareas, GraficarCajaTarea)
             };
 
             void AgregarTarea(object sender, EventArgs e) 
@@ -161,17 +172,26 @@ public class PantallaDespacho : Component<estado_del_despacho, parametros_despac
                         new Label(tarea.instrucciones)
                             .TextColor(Colors.Black)
                             .TextDecorations(TextDecorations.Underline)
+                            .FontSize(20)
+                            .Margin(5)
 
                             ,
 
-                        new Button("eliminar")
+                        new Button()
+                            .Text("X").HCenter().FontSize(30)
                             .TextColor(Colors.Black)
-                            .FontSize(20)
+                            .HeightRequest(35)
+                            .BackgroundColor(Colors.Red)
+                            .HEnd()
                             .OnClicked( () => SetState( s=> s.tareas.Remove(tarea)))
+
                     }
+                    .HFill()
+                    .VFill()
 
                 }
-                .BackgroundColor(Colors.Yellow)
+                .StrokeCornerRadius(15,0,0,15)
+                .BackgroundColor(Colors.White)
                 ;
                     
             }
@@ -188,7 +208,10 @@ public class PantallaDespacho : Component<estado_del_despacho, parametros_despac
                 .OnTextChanged((t) => SetState(s => s.nuevoMensaje.notaMensaje = t))
             };
         }
-
+        VisualNode GraficarFormularioConversacion()
+        {
+            return new Label("Inicie una nueva conversacion");
+        }
     }
 
     private async void EnviarMensaje(Mensaje msj)
@@ -218,6 +241,8 @@ public class PantallaDespacho : Component<estado_del_despacho, parametros_despac
         var servicio = Services.GetRequiredService<Servicios.IServicios>();
         foreach (var seleccionado in Props.empleadoConectadoSeleccionado)
         {
+            var nuevaConversa = new Conversacion() { mensajesDeTexto = new ObservableCollection<Mensaje>()};
+            
             var nuevo = new Mensaje()
             {
                  idMensaje = new Random().Next(0,1000),
@@ -228,7 +253,7 @@ public class PantallaDespacho : Component<estado_del_despacho, parametros_despac
                  receta = msj.receta,
                  tareas = msj.tareas,
                  actualizacion = msj.actualizacion,
-                 conversa = msj.conversa,
+                 conversa = nuevaConversa,
                  estado = Mensaje.Estado.Despachado
             };
 
@@ -249,6 +274,3 @@ public class PantallaDespacho : Component<estado_del_despacho, parametros_despac
 
 
 }
-
-
-

@@ -5,6 +5,8 @@ using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using Riok.Mapperly.Abstractions;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 
 namespace API.Hubs.PuertoDeEntrada;
 
@@ -1137,7 +1139,10 @@ public class MensajeriaSinLogica : Hub, IMensajeriaHub
         if (clave is null) return new RespuestaEnviarMensaje() { exito = false, respuesta = "El receptor no está activo" };
 
         var direccionEnvio = _direcciones[clave];
-        Console.WriteLine($"{solicitud.mensaje.emisor.nombreEmpleado} le envio un msj a {solicitud.mensaje.receptor.nombreEmpleado} con cuerpo {solicitud.mensaje}");
+
+        var mensajeJson = JsonSerializer.Serialize(solicitud.mensaje, new JsonSerializerOptions { WriteIndented = true });
+
+        Console.WriteLine($"{solicitud.mensaje.emisor.nombreEmpleado} le envio un msj a {solicitud.mensaje.receptor.nombreEmpleado} con cuerpo:  {mensajeJson}");
 
         await this.Clients.Client(direccionEnvio).SendAsync("RecibirNuevoMensaje", solicitud.mensaje);
 

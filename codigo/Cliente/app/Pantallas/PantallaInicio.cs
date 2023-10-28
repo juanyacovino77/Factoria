@@ -58,6 +58,7 @@ internal class PantallaInicio : Component<estado_del_inicio>
     }
     private async void OnLogin()
     {
+
         var servicio = Services.GetService<IServicios>();
         try
         {

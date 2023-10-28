@@ -60,6 +60,8 @@
     <None Remove="Resources\Raw\limites.mp3" />
     <None Remove="Resources\Raw\notificacion.json" />
     <None Remove="Resources\Raw\notificacion1.json" />
+    <None Remove="Resources\Raw\proceso.json" />
+    <None Remove="Resources\Raw\proceso1.json" />
     <None Remove="Resources\Raw\receta.json" />
     <None Remove="Resources\Raw\recetas.json" />
     <None Remove="Resources\Raw\sonido_mensaje.wav" />

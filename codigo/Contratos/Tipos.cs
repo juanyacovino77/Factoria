@@ -143,10 +143,8 @@ public class Proceso
     public Mensaje? Procesar(Mensaje msj)
     {
         var i = Array.FindIndex(cadena, m => m.idMensaje == msj.idMensaje);
-        if (i == -1)
-        {
-            return null;
-        }
+        if (i == -1) return null;
+
         var m = cadena[i];
         var ultimo = (i > -1) && i == cadena.Length - 1;
 

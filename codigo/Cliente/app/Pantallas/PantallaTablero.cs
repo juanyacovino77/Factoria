@@ -33,18 +33,22 @@ public class estado_del_tablero
 
     public void AñadirOActualizarMensaje(Mensaje msjNuevo)
     {
-        var lista = msjNuevo.emisor.idEmpleado == empleadoOperativo.idEmpleado ? enviados : mensajes; // Si es enviado o recibido el nuevo
+        bool esEnviado = msjNuevo.emisor.idEmpleado == empleadoOperativo.idEmpleado; // Si es enviado o recibido el nuevo
+        var lista = esEnviado ? enviados : mensajes; 
 
-        if (msjNuevo.actualizacion is null) 
-            { lista.Insert(0, msjNuevo); return; } // Es un nuevo mensaje
+        if (msjNuevo.actualizacion is null) // Es un nuevo mensaje
+        { 
+            lista.Insert(0, msjNuevo);
+            return;
+        }
 
 
         // Es una actualización de un mensaje ya existente
-        lista = msjNuevo.actualizacion.emisor.idEmpleado == empleadoOperativo.idEmpleado ? enviados : mensajes;
-        var msj = lista.FirstOrDefault(m => m.idMensaje == msjNuevo.actualizacion.idMensaje);
-        var i = lista.IndexOf(msj);
+        esEnviado = msjNuevo.actualizacion.emisor.idEmpleado == empleadoOperativo.idEmpleado;
+        lista = esEnviado ? enviados : mensajes;
 
-        if (i == -1) return;
+        var msj = lista.FirstOrDefault(m => m.idMensaje == msjNuevo.actualizacion.idMensaje);
+        var i = lista.IndexOf(msj); if (i == -1) return;
 
         lista[i].notificacion = msjNuevo.actualizacion.notificacion;
         lista[i].receta = msjNuevo.actualizacion.receta;
@@ -55,39 +59,48 @@ public class estado_del_tablero
         // Pertenece a un Proceso Productivo?
         // Buscar pp en la lista de recibidos
         // quiero obtener el proceso que contiene a este msj nuevo.actualizacion
-        /*
+        //if (esEnviado) return;
 
-ProcesarMensajeDeProceso();
-void ProcesarMensajeDeProceso()
-{
-    Proceso proceso = new();
-    foreach (var m in mensajes)
-    {
-        if (m.proceso is null) continue;
-        var esDelProceso = m.proceso.cadena.Any(m => m.idMensaje == msjNuevo.actualizacion.idMensaje);
-        if (esDelProceso)
+        ProcesarMensajeDeProceso();
+
+        void ProcesarMensajeDeProceso()
         {
-            proceso = m.proceso;
-            break;
-        }
-    }
+            Proceso proceso = new();
+            foreach (var m in mensajes)
+            {
+                if (m.proceso is null) 
+                {
+                    proceso = null;
+                    continue;
+                }
+                var esDelProceso = m.proceso.cadena.Any(m => m.idMensaje == msjNuevo.actualizacion.idMensaje);
+                if (esDelProceso)
+                {
+                    proceso = m.proceso;
+                    break;
+                }
+                else
+                {
+                    proceso = null;
+                }
+            }
 
-    if (proceso is not null)
-    {
-        var msjAEnviar = proceso.Procesar(msjNuevo.actualizacion);
-        if (msjAEnviar is not null)
-        {
-            SolicitarEnviarMensaje(msjAEnviar);
-        }
-    }
+            if (proceso is not null && proceso?.cadena is not null)
+            {
+                var msjAEnviar = proceso.Procesar(msjNuevo.actualizacion);
+                if (msjAEnviar is not null)
+                {
+                    SolicitarEnviarMensaje(msjAEnviar);
+                }
+            }
 
-    async void SolicitarEnviarMensaje(Mensaje m)
-    {
-        await PantallaTablero.EnviarMensaje(m);
-        AñadirOActualizarMensaje(m);
-    }
-}
-*/
+            async void SolicitarEnviarMensaje(Mensaje m)
+            {
+                await PantallaTablero.EnviarMensaje(m);
+                AñadirOActualizarMensaje(m);
+            }
+        }
+        
     }
 }
 public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
@@ -126,149 +139,178 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
         return 
             new ContentPage()
             {
-                new Grid("auto *", "* *")
+                new Grid("auto, 80, *", "*")
                 {                        
                     GraficarEncabezado()
                     ,
-
                     GraficarListaDeMensajes()
-                    
-                    #if ANDROID
-                    ,
-                    new Popup()
-                        .IsOpen(State.mensajeSeleccionado is not null)
-                        .IsFullScreen(true)
-                        .Content(GraficarCuerpoDelMensaje)
-                        .ShowHeader(false)
-                        .ShowCloseButton(true)
-                        .ShowHeader(true)
-                        .HeaderTitle("Detalle del mensaje")
-                    #else
                     ,
                     GraficarCuerpoDelMensaje()
-                    #endif
                 }
-            };
+            }
+            .Set(MauiControls.NavigationPage.HasNavigationBarProperty, false)
+            ;
 
         VisualNode GraficarEncabezado()
         {
+            var tareasTotales = State.mensajes.Count(m => m.tareas is not null);
+            var notificacionesTotales = State.mensajes.Count(m => m.notificacion is not null);
+            var tareasCompletas = State.mensajes.Count(m => m.tareas?.estado is Tareas.Estado.Finalizado);
+            var notisConfirmadas = State.mensajes.Count(m => m.notificacion?.estadoActual is Notificacion.Estado.Confirmado);
 
-            return new Grid("*", "*")
+            return new Grid("* *", "*")
             {
 
-                    new VStack()
-                    {
-                       new Label($"Bienvenido,")
-                           .FontAttributes(MauiControls.FontAttributes.Bold)
-                           .FontSize(20)
-                           .Padding(2)
-                           .VCenter()
+                        new HStack()
+                        {
+                            new Label($"Bienvenido! ")
+                               .FontAttributes(MauiControls.FontAttributes.Bold)
+                               .FontSize(20)
+                               .Padding(2)
+                               .VCenter()
+                               .TextColor(Colors.Orange)
 
-                           ,
-
-                      new Label($"{State.empleadoOperativo.nombreEmpleado} del sector {State.empleadoOperativo.nombreSector}")
-                           .FontAttributes(MauiControls.FontAttributes.Bold)
-                           .VCenter()
-                           .Padding(2)
-
-                           ,
-
-                      new HStack()
-                      {
-                           new ImageButton("icono_de_usuario2.png")
-                               .HeightRequest(80)
-                               .HStart()
-                               .Margin(10)
                                ,
 
-                           new VStack()
-                           {
-                               new Label("Hoy confirmaste notificaciones!").TextColor(Colors.White),
-                                new LineaProgreso()
-                                .HStart()
-                                .VStart()
-                                .TrackFill(Colors.Grey)
-                                .WidthRequest(150)
-                                .Margin(10)
-                                .SegmentCount(State.mensajes.Count(m => m.notificacion is not null))
-                                .Progress(State.mensajes.Count(m => m.notificacion?.estadoActual is Notificacion.Estado.Confirmado))
-                                .IsIndeterminate(true)
+                          new Label($"{State.empleadoOperativo.nombreEmpleado} del sector {State.empleadoOperativo.nombreSector}")
+                               .FontAttributes(MauiControls.FontAttributes.Bold)
+                               .VCenter()
+                               .Padding(2)
+                        }
+                            .GridRow(0)
+                        ,
 
+                        new HStack()
+                          {
+                               new ImageButton("icono_de_usuario2.png")
+                                   .HeightRequest(80)
+                                   .HStart()
+                                   .Margin(10)
+                               ,
+
+                               new VStack()
+                               {
+                                   new Label($"Hoy confirmaste notificaciones! {notisConfirmadas}/{notificacionesTotales}")
+                                    .TextColor(Colors.White)
+                                    .FontSize(12)
                                     ,
-
-                               new Label("Hoy completaste tareas!").TextColor(Colors.White),
-                               new LineaProgreso()
-                                .HStart()
-                                .VCenter()
-                                .TrackFill(Colors.Grey)
-                                .WidthRequest(150)
-                                .Margin(10)
-                                .SegmentCount(State.mensajes.Count(m => m.tareas is not null))
-                                .Progress(State.mensajes.Count(m => m.tareas?.estado is Tareas.Estado.Finalizado))
-                                .IsIndeterminate(true)
-                           }
-                           .VCenter()
-
+                                    new LineaProgreso()
+                                    .HStart()
+                                    .VStart()
+                                    .TrackFill(Colors.Grey)
+                                    .WidthRequest(150)
+                                    .TrackHeight(10)
+                                    .ProgressHeight(10)
+                                    .Margin(10)
+                                    .SegmentCount(notificacionesTotales)
+                                    .Progress(notificacionesTotales > 0 ? notisConfirmadas*100/notificacionesTotales: 0)
+                                    .ProgressFill(Colors.Yellow)
+                                    .IsIndeterminate(notificacionesTotales==0)
 
 
-                      }
+                                        ,
 
+                                   new Label($"Hoy completaste tareas! {tareasCompletas}/{tareasTotales}")
+                                   .TextColor(Colors.White)
+                                   .FontSize(12)
+                                   ,
+                                   new LineaProgreso()
+                                    .HStart()
+                                    .VCenter()
+                                    .TrackFill(Colors.Grey)
+                                    .WidthRequest(150)
+                                    .TrackHeight(10)
+                                    .ProgressHeight(10)
+                                    .Margin(10)
+                                    .SegmentCount(tareasTotales)
+                                    .Progress(tareasTotales > 0 ? tareasCompletas*100/tareasTotales: 0)
+                                    .ProgressFill(Colors.LightGreen)
+                                    .IsIndeterminate(tareasTotales==0)
 
-
-                           ,
-
-
-                    }
-                    .HStart()
-                    ,
-
-                    new HStack()
-                    {
-
-                        
-                        
-                       
-                       
-
-                       new Popup()
-                                .AutoSizeMode(PopupAutoSizeMode.Height)
-                                .Content(GraficarTablaEmpleadosConectados)
-                                .HeaderTitle("Envie un mensaje a")
-                                .IsOpen(() => State.IsPopupOpen)
-                                .OnClosed(()=>SetState(s => s.IsPopupOpen = false, false))
-                                .AnimationMode(PopupAnimationMode.SlideOnRight)
-                                .AnimationDuration(130),
-
-
-
-
-                       new ImageButton("icono_conectados4.png")
-                               .OnClicked(() => SetState(s => s.IsPopupOpen = true, false))
+                               }
+                                    .VCenter()
 
                                ,
 
-                       new SonidoMensaje()
-                                .Source(MediaSource.FromResource("sonido_mensaje.wav"))
-                                .IsVisible(false)
-                                .HeightRequest(200)
-                                .WidthRequest(200)
+                                       new Button("+")
+                                       .VEnd()
+                                       .HeightRequest(35)
+                                        .OnClicked(() => SetState(s => s.AñadirOActualizarMensaje(
+                                            new Mensaje()
+                                            {
+                                                notaMensaje = "Este mensaje viene de ALGUN LADO DEL MUNDO",
+                                                emisor = new Empleado(){ nombreEmpleado = "carmen", nombreSector= "CAJA - FANTI"},
+                                                notificacion= new Notificacion(),
+                                                idMensaje = new Random().Next(0, 100),
+                                            })))
 
+                                        ,
 
-                               ,
+                                        new Button("-")
+                                            .VEnd()
+                                            .HeightRequest(35)
+                                            .OnClicked(() => SetState(s => {s.mensajes.Clear(); s.enviados.Clear(); }))
 
-                       new ImageButton("icono_cerrar_sesion1.png")
-                                .Margin(5)
-                                .HeightRequest(50)
-                                .OnClicked(CerrarSesion)
+                                        ,
 
-                    }
-                    .HEnd()
-                    .VEnd()
+                                        new Border()
+                                        {
+                                            new HStack
+                                            {
+                                                new Label()
+                                                    .Text("ENVIADOS")
+                                                    .VCenter()
+                                                    .HCenter()
+                                                    .FontSize(12)
+                                                    .TextColor(State.checkBoxEnviados ? Colors.White : Colors.Black)
+                                                    .FontAttributes(MauiControls.FontAttributes.Bold)
+                                                    ,
+
+                                                new CheckBox()
+                                                    .Color(Colors.BlueViolet)
+                                                    .OnCheckedChanged((s,a) => SetState(s => s.checkBoxEnviados=a.Value))
+                                            }
+                                            .Padding(3,0,0,0)
+                                            .HCenter()
+                                            .VCenter()
+                                        }
+                                            .BackgroundColor(State.checkBoxEnviados ? Colors.BlueViolet : Colors.WhiteSmoke)
+                                            .Stroke(Colors.BlueViolet)
+                                            .StrokeThickness(1)
+                                            .StrokeCornerRadius(10)
+                                            .HeightRequest(35)
+                                            .VEnd()
+
+                                            ,
+
+                                   new Popup()
+                                            .AutoSizeMode(PopupAutoSizeMode.Height)
+                                            .Content(GraficarTablaEmpleadosConectados)
+                                            .HeaderTitle("Envie un mensaje a")
+                                            .IsOpen(State.IsPopupOpen)
+                                            .OnClosed(()=>SetState(s => s.IsPopupOpen = false, false))
+                                            .AnimationMode(PopupAnimationMode.SlideOnRight)
+                                            .AnimationDuration(130),
+
+                                   new ImageButton("icono_conectados4.png")
+                                           .OnClicked(() => SetState(s => s.IsPopupOpen = true))
+
+                                           ,
+
+                                   new SonidoMensaje()
+                                            .Source(MediaSource.FromResource("sonido_mensaje.wav"))
+                                            .IsVisible(false)
+                                           ,
+
+                                   new ImageButton("icono_cerrar_sesion1.png")
+                                            .Margin(5)
+                                            .HeightRequest(50)
+                                            .OnClicked(CerrarSesion)
+                          }
+                             .GridRow(1)
             }
                 .BackgroundColor(Colors.Black)
-                .GridColumn(0)
-                .GridRow(0)
-                .GridColumnSpan(2);
+                ;
 
             VisualNode GraficarTablaEmpleadosConectados()
             {
@@ -357,80 +399,18 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
         }
         VisualNode GraficarListaDeMensajes()
         {
-            return new VStack()
-            {
-                new HStack()
-                {
-
-
-                   new Button("+")
-                    .Padding(10)
-                    .OnClicked(() => SetState(s => s.AñadirOActualizarMensaje(
-                        new Mensaje()
-                        {
-                            notaMensaje = "Este mensaje viene de ALGUN LADO DEL MUNDO",
-                            emisor = new Empleado(){ nombreEmpleado = "carmen", nombreSector= "CAJA - FANTI"},
-                            notificacion= new Notificacion(),
-                            idMensaje = new Random().Next(0, 100),
-                        })))
-
-                    ,
-
-                    new Button("-")
-                        .Padding(10)
-                        .OnClicked(() => SetState(s => {s.mensajes.Clear(); s.enviados.Clear(); }))
-
-                    ,
-
-                    new Border()
-                    {
-                        new HStack
-                        {
-                            new Label("ENVIADOS")
-                                .VCenter()
-                                .HCenter()
-                                .FontSize(12)
-                                .TextColor(Colors.DimGrey)
-                                ,
-
-                            new CheckBox()
-                                .Color(Colors.BlueViolet)
-                                .OnCheckedChanged((s,a) => {
-                                    SetState(s => s.checkBoxEnviados=a.Value);
-                                })
-
-                                ,
-                        }
-                        .Padding(3,0,0,0)
-                        .HCenter()
-                        .VCenter()
-                    }
-                        .BackgroundColor(Colors.WhiteSmoke)
-                        .Stroke(Colors.BlueViolet)
-                        .StrokeThickness(1)
-                        .StrokeCornerRadius(10)
-
-                }
-                .HEnd()
-                ,
-
+            return
                 new Grid("*", "*")
                 {
                         new CollectionView()
                             .ItemsSource(State.checkBoxEnviados ? State.enviados : State.mensajes, GraficarMensajes)
                             .SelectionMode(MauiControls.SelectionMode.Single)
                             .OnSelectionChanged((s,e) => SeleccionarMensaje(e))
+                            .ItemsLayout(new HorizontalLinearItemsLayout())
                 }
-                .HeightRequest(400)
-            }
-#if WINDOWS
-        .BackgroundColor(Colors.LightSteelBlue)
-        .GridRow(1);
-#else
             .BackgroundColor(Colors.LightSteelBlue)
-            .GridColumnSpan(2)
-            .GridRow(1);
-#endif
+            .GridRow(1)
+            ;
 
             VisualNode GraficarMensajes(Mensaje msj)
             {
@@ -473,7 +453,8 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
         VisualNode GraficarCuerpoDelMensaje()
         {
             var msj = State.mensajeSeleccionado;
-            return new StackLayout()
+
+            return new Grid("*", "*")
             {
                 msj switch
                 {
@@ -485,9 +466,9 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
                     _ => new VStack()
                 }
             }
+                .GridRow(2)
                 .BackgroundColor(Colors.CornflowerBlue)
-                .GridRow(1)
-                .GridColumn(1)
+                .VFill()
                 ;
                 
 
@@ -598,80 +579,91 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
             }
             VisualNode GraficarTareas(Tareas tareas)
             {
-                return new VStack()
-                {
-                    new HStack()
+                return 
+                    new VStack()
                     {
-                        new SKLottieView()
-                            .Source(new SkiaSharp.Extended.UI.Controls.SKFileLottieImageSource()
+                        new HStack()
+                        {
+                            new SKLottieView()
+                                .Source(new SkiaSharp.Extended.UI.Controls.SKFileLottieImageSource()
+                                {
+                                     File = "tareas.json"
+                                })
+                                .IsAnimationEnabled(true)
+                                .RepeatCount(-1)
+                                .HeightRequest(200)
+                                .WidthRequest(200)
+                                .HStart()
+                            ,
+
+                            new VStack()
                             {
-                                 File = "tareas.json"
-                            })
-                            .IsAnimationEnabled(true)
-                            .RepeatCount(-1)
-                            .HeightRequest(200)
-                            .WidthRequest(200)
-                            .HStart()
-                        ,
+                                 new Label("Tareas")
+                                    .FontAttributes(MauiControls.FontAttributes.Bold)
+                                    .TextDecorations(TextDecorations.Underline)
+                                    .Padding(10)
+                                    .FontSize(30)
+                                    .FontFamily("Italic")
+                                    .TextColor(Colors.Black)
+                                    .HEnd()
+                                    .VCenter()
 
-                        new Label("Tareas")
-                            .FontAttributes(MauiControls.FontAttributes.Bold)
-                            .TextDecorations(TextDecorations.Underline)
-                            .Padding(10)
-                            .FontSize(30)
-                            .FontFamily("Italic")
-                            .TextColor(Colors.Black)
-                            .HEnd()
+                                ,
+
+                                new BarraProgreso()
+                                    .SegmentCount(tareas.tareas.Length)
+                                    .Progress(tareas.Progreso() * 100 / tareas.Cantidad())
+                                    .IsIndeterminate(tareas.estado is Tareas.Estado.NoIniciado)
+                                    .ProgressFill(Colors.Green)
+                                    .ProgressThickness(7)
+                                    .TrackThickness(7)
+                                    .HeightRequest(50)
+                                    .SegmentGapWidth(3)
+                                    .HCenter()
+
+                                ,
+
+                                new Label($"{tareas.estado}")
+                                    .HCenter()
+                                    .FontAttributes(MauiControls.FontAttributes.Bold)
+
+                            }
                             .VCenter()
 
-                        ,
 
-                        new BarraProgreso()
-                            .SegmentCount(tareas.tareas.Length)
-                            .Progress(tareas.Progreso() * 100 / tareas.Cantidad())
-                            .ProgressThickness(10)
-                            .SegmentGapWidth(3)
+                        }
+                        .HStart()
+                            ,
 
-                        ,
-
-                        new Label($"{tareas.estado}")
-                            .VCenter()
-                            .Margin(35,0,0,0)
-
-                    }
-                        ,
-
-                    new Grid("*", "*")
-                    {
-                         new CollectionView()
-                            .ItemsSource(tareas.tareas, (t) => GraficarCajaTarea(t, TareaCambiada))
-                            .IsEnabled(tareas.EnPreparacion())
-                            .HCenter()
-                    }
+                        new Grid("*", "*")
+                        {
+                             new CollectionView()
+                                .ItemsSource(tareas.tareas, (t) => GraficarCajaTarea(t, TareaCambiada))
+                                .IsEnabled(tareas.EnPreparacion())
+                                .HCenter()
+                        }
                         .HeightRequest(200)
+                        .HStart()
 
-                        ,
+                            ,
+                        new HStack()
+                        {
+                            new Button("TOMAR")
+                                .TextColor(Colors.Black)
+                                .BackgroundColor(Colors.Green)
+                                .OnClicked(() => ActualizarEstadoCuerpoMensaje(tareas.PonerEnPreparacion()))
+                                .IsEnabled(!State.checkBoxEnviados)
 
-                    new HStack()
-                    {
-                        new Button("TOMAR")
-                            .TextColor(Colors.Black)
-                            .BackgroundColor(Colors.Green)
-                            .OnClicked(() => ActualizarEstadoCuerpoMensaje(tareas.PonerEnPreparacion()))
-                            .IsEnabled(!State.checkBoxEnviados)
+                            ,
+                            new Button("RECHAZAR")
+                                .TextColor(Colors.Black)
+                                .BackgroundColor(Colors.Red)
+                                .OnClicked(() => ActualizarEstadoCuerpoMensaje(tareas.PonerEnRechazado()))
+                                .IsEnabled(!State.checkBoxEnviados)
 
-                        ,
-                        new Button("RECHAZAR")
-                            .TextColor(Colors.Black)
-                            .BackgroundColor(Colors.Red)
-                            .OnClicked(() => ActualizarEstadoCuerpoMensaje(tareas.PonerEnPreparacion()))
-                            .IsEnabled(!State.checkBoxEnviados)
-
-                    }
-                    .HCenter()
-
-                }
-                ;
+                        }
+                        .HStart()
+                    };
 
                 void TareaCambiada()
                 {
@@ -723,7 +715,7 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
                         new SKLottieView()
                             .Source(new SkiaSharp.Extended.UI.Controls.SKFileLottieImageSource()
                             {
-                                 File = "tareas.json"
+                                 File = "proceso1.json"
                             })
                             .IsAnimationEnabled(true)
                             .RepeatCount(-1)
@@ -732,31 +724,35 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
                             .HStart()
                         ,
 
-                        new Label("Proceso productivo")
+                        new VStack()
+                        {
+                             new Label($"Proceso productivo  #{State.mensajeSeleccionado.idMensaje}")
                             .FontAttributes(MauiControls.FontAttributes.Bold)
                             .TextDecorations(TextDecorations.Underline)
                             .Padding(10)
                             .FontSize(30)
                             .FontFamily("Italic")
                             .TextColor(Colors.Black)
-                            .HEnd()
-                            .VCenter()
+                            .VStart()
 
-                        ,
+                            ,
 
-                        new Label($"{proceso.estado}")
+                            new Label($"{proceso.estado}")
                             .VCenter()
                             .Margin(35,0,0,0)
+                        }
+
                     }
+                    .HCenter()
+
                         ,
 
                     new Grid("*", "*")
                     {
                          new CollectionView()
                             .ItemsLayout(new HorizontalLinearItemsLayout())
-                            .ItemsSource(proceso.cadena, (m) => new Label($"msj{m.idMensaje} - estado {m.estado}"))
+                            .ItemsSource(proceso.cadena, GraficarCajaMensajeProceso)
                     }
-                        .HeightRequest(200)
                         ,
 
                     new HStack()
@@ -775,18 +771,41 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
                     .HCenter()
 
                 }
+                .HCenter()
                 ;
+
+                VisualNode GraficarCajaMensajeProceso(Mensaje m)
+                {
+                    return new Border()
+                    {
+                        new VStack()
+                        {
+                            new Label($"msj #{m.idMensaje}"),
+                            new Label($"estado {m.estado}"),
+                            new Label($"recibe {m.receptor.nombreEmpleado}")
+                        }
+                    }
+                    .Margin(5)
+                    .StrokeCornerRadius(5,5,5,5)
+                    .Stroke(Colors.White)
+                    ;
+                }
             }
             VisualNode GraficarConversacion(Conversacion conversa)
             {
                 MauiControls.Entry entryRef = new();
+                var con 
+                    = State.mensajeSeleccionado.emisor.idEmpleado
+                    == State.empleadoOperativo.idEmpleado
+                    ?  State.mensajeSeleccionado.receptor.nombreEmpleado
+                    :  State.mensajeSeleccionado.emisor.nombreEmpleado;
 
                 return new VStack()
                 {
                     new HStack()
                     {
 
-                        new Label("Conversación")
+                        new Label($"Conversación con {con}")
                             .FontAttributes(MauiControls.FontAttributes.Bold)
                             .TextDecorations(TextDecorations.Underline)
                             .Padding(10)
@@ -883,7 +902,8 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
 
             async void IniciarProceso(Proceso proceso)
             {
-                var msjAEnviar = proceso.IniciarProceso();
+                var msjAEnviar = proceso.IniciarProceso(); // Saca el primer mensaje del proceso
+
                 var receptorActivo = State.conectados.Any(e => e.idEmpleado == msjAEnviar.receptor.idEmpleado);
 
                 if (!receptorActivo)
