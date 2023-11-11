@@ -362,3 +362,4 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /codigo/Cliente/app/Platforms/Windows/Package.appxmanifest
+/codigo/Contratos/com.companyname.app.apk
