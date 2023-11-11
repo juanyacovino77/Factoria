@@ -10,7 +10,7 @@ public class Program
 
         // Add services to the container.
         builder.Services.AddRazorPages();
-        builder.Services.AddSignalR()
+        builder.Services.AddSignalR(cfg => { cfg.MaximumReceiveMessageSize = 10048576; })
             .AddJsonProtocol();
 
         builder.Services.AddTransient<IServicios, Servicios>();

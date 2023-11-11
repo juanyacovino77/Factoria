@@ -23,6 +23,45 @@
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
+    <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
+    <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
+    <AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
+    <GenerateTestArtifacts>True</GenerateTestArtifacts>
+    <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
+    <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
+    <PackageCertificateThumbprint>2D62E375F9086FB3CC63C183D3E02E87F3C251C7</PackageCertificateThumbprint>
+    <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net7.0-android|AnyCPU'">
+    <AndroidPackageFormat>apk</AndroidPackageFormat>
+    <Optimize>True</Optimize>
+    <AndroidEnableProfiledAot>False</AndroidEnableProfiledAot>
+    <RunAOTCompilation>False</RunAOTCompilation>
+    <PublishTrimmed>False</PublishTrimmed>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net7.0-android|AnyCPU'">
+    <Optimize>False</Optimize>
+    <AndroidEnableProfiledAot>True</AndroidEnableProfiledAot>
+    <RunAOTCompilation>True</RunAOTCompilation>
+    <PublishTrimmed>True</PublishTrimmed>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net7.0-ios|AnyCPU'">
+    <Optimize>False</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net7.0-maccatalyst|AnyCPU'">
+    <Optimize>False</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net7.0-windows10.0.19041.0|AnyCPU'">
+    <Optimize>False</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net7.0-ios|AnyCPU'">
+    <Optimize>False</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net7.0-maccatalyst|AnyCPU'">
+    <Optimize>False</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net7.0-windows10.0.19041.0|AnyCPU'">
+    <Optimize>True</Optimize>
   </PropertyGroup>
   <ItemGroup>
     <!-- App Icon -->
@@ -55,22 +94,24 @@
     <None Remove="Resources\Images\icono_recibido.png" />
     <None Remove="Resources\Images\icono_sindespachar.png" />
     <None Remove="Resources\Images\icono_visto.png" />
+    <None Remove="Resources\Raw\actualizacion_mensaje.mp3" />
     <None Remove="Resources\Raw\conectado.json" />
     <None Remove="Resources\Raw\dotnetbot.json" />
     <None Remove="Resources\Raw\limites.mp3" />
     <None Remove="Resources\Raw\notificacion.json" />
     <None Remove="Resources\Raw\notificacion1.json" />
+    <None Remove="Resources\Raw\nuevo_mensaje.wav" />
     <None Remove="Resources\Raw\proceso.json" />
     <None Remove="Resources\Raw\proceso1.json" />
     <None Remove="Resources\Raw\receta.json" />
     <None Remove="Resources\Raw\recetas.json" />
-    <None Remove="Resources\Raw\sonido_mensaje.wav" />
     <None Remove="Resources\Raw\tareas.json" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Maui.MediaElement" Version="2.0.0" />
     <PackageReference Include="epj.Expander.Maui" Version="1.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.13" />
+    <PackageReference Include="Plugin.Maui.Audio" Version="2.0.0" />
     <PackageReference Include="Reactor.Maui" Version="1.0.145" />
     <PackageReference Include="Reactor.Maui.Canvas" Version="1.0.145" />
     <PackageReference Include="Reactor.Maui.ScaffoldGenerator" Version="1.0.145" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />

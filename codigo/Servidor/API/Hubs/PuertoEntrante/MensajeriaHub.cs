@@ -42,13 +42,8 @@ public class MensajeriaHub : Hub
 {
     /* tabla de direcciones compartido por todas las instancias de hubs */
     private static readonly IDictionary<string, Direccion> _direcciones = new ConcurrentDictionary<string, Direccion>();
-
     private IServicios _servicios { get; set; }
-
-    public MensajeriaHub(IServicios servicios)
-    {
-        _servicios = servicios;
-    }
+    public MensajeriaHub(IServicios servicios) => _servicios = servicios;
 
     public override Task OnConnectedAsync()
     {
@@ -177,7 +172,6 @@ public class MensajeriaSinLogica : Hub, IMensajeriaHub
                              {
                                  estadoActual = Notificacion.Estado.NoConfirmado,
                                  texto = "Nueva lista de tareas requeridas:",
-                                 urlImagen = "/imagen/limpia/pisos.png"
                              },
                          idMensaje = 1,
                      },
@@ -305,7 +299,6 @@ public class MensajeriaSinLogica : Hub, IMensajeriaHub
                              {
                                  estadoActual = Notificacion.Estado.NoConfirmado,
                                  texto = "Nueva lista de tareas requeridas:",
-                                 urlImagen = "/imagen/limpia/pisos.png"
                              },
                          idMensaje = 1,
                      },
@@ -382,7 +375,6 @@ public class MensajeriaSinLogica : Hub, IMensajeriaHub
                              {
                                  estadoActual = Notificacion.Estado.NoConfirmado,
                                  texto = "Nueva lista de tareas requeridas:",
-                                 urlImagen = "/imagen/limpia/pisos.png"
                              },
                          idMensaje = 1,
                      },
@@ -459,7 +451,6 @@ public class MensajeriaSinLogica : Hub, IMensajeriaHub
                              {
                                  estadoActual = Notificacion.Estado.NoConfirmado,
                                  texto = "Nueva lista de tareas requeridas:",
-                                 urlImagen = "/imagen/limpia/pisos.png"
                              },
                          idMensaje = 1,
                      },
@@ -586,7 +577,6 @@ public class MensajeriaSinLogica : Hub, IMensajeriaHub
                              {
                                  estadoActual = Notificacion.Estado.NoConfirmado,
                                  texto = "Nueva lista de tareas requeridas:",
-                                 urlImagen = "/imagen/limpia/pisos.png"
                              },
                          idMensaje = 1,
                      },
@@ -663,7 +653,6 @@ public class MensajeriaSinLogica : Hub, IMensajeriaHub
                              {
                                  estadoActual = Notificacion.Estado.NoConfirmado,
                                  texto = "Nueva lista de tareas requeridas:",
-                                 urlImagen = "/imagen/limpia/pisos.png"
                              },
                          idMensaje = 1,
                      },
@@ -740,7 +729,6 @@ public class MensajeriaSinLogica : Hub, IMensajeriaHub
                              {
                                  estadoActual = Notificacion.Estado.NoConfirmado,
                                  texto = "Nueva lista de tareas requeridas:",
-                                 urlImagen = "/imagen/limpia/pisos.png"
                              },
                          idMensaje = 1,
                      },
@@ -867,7 +855,6 @@ public class MensajeriaSinLogica : Hub, IMensajeriaHub
                              {
                                  estadoActual = Notificacion.Estado.NoConfirmado,
                                  texto = "Nueva lista de tareas requeridas:",
-                                 urlImagen = "/imagen/limpia/pisos.png"
                              },
                          idMensaje = 1,
                      },
@@ -944,7 +931,6 @@ public class MensajeriaSinLogica : Hub, IMensajeriaHub
                              {
                                  estadoActual = Notificacion.Estado.NoConfirmado,
                                  texto = "Nueva lista de tareas requeridas:",
-                                 urlImagen = "/imagen/limpia/pisos.png"
                              },
                          idMensaje = 1,
                      },
@@ -1021,7 +1007,6 @@ public class MensajeriaSinLogica : Hub, IMensajeriaHub
                              {
                                  estadoActual = Notificacion.Estado.NoConfirmado,
                                  texto = "Nueva lista de tareas requeridas:",
-                                 urlImagen = "/imagen/limpia/pisos.png"
                              },
                          idMensaje = 1,
                      },
@@ -1130,9 +1115,6 @@ public class MensajeriaSinLogica : Hub, IMensajeriaHub
 
     public async Task<RespuestaEnviarMensaje> EnviarMensaje(SolicitudEnviarMensaje solicitud)
     {
-        if (solicitud.mensaje is { emisor: null } || solicitud.mensaje is { receptor:null }) return new RespuestaEnviarMensaje() { exito = false, respuesta= "Mensaje incompleto"};
-
-        // logica de reenvio de mensajes a los clientes, segun id, grupo, sector, etc
         var idEmpleado = solicitud.mensaje.receptor.idEmpleado;
         var clave = _direcciones.Keys.ToList().Find(e => e.idEmpleado == idEmpleado);
 
@@ -1141,7 +1123,6 @@ public class MensajeriaSinLogica : Hub, IMensajeriaHub
         var direccionEnvio = _direcciones[clave];
 
         var mensajeJson = JsonSerializer.Serialize(solicitud.mensaje, new JsonSerializerOptions { WriteIndented = true });
-
         Console.WriteLine($"{solicitud.mensaje.emisor.nombreEmpleado} le envio un msj a {solicitud.mensaje.receptor.nombreEmpleado} con cuerpo:  {mensajeJson}");
 
         await this.Clients.Client(direccionEnvio).SendAsync("RecibirNuevoMensaje", solicitud.mensaje);

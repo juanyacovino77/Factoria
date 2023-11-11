@@ -7,10 +7,14 @@ using MauiReactor;
 using MauiReactor.Canvas;
 using MauiReactor.Shapes;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.Storage;
+using Plugin.Maui.Audio;
 using Syncfusion.Maui.Popup;
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -59,8 +63,6 @@ public class estado_del_tablero
         // Pertenece a un Proceso Productivo?
         // Buscar pp en la lista de recibidos
         // quiero obtener el proceso que contiene a este msj nuevo.actualizacion
-        //if (esEnviado) return;
-
         ProcesarMensajeDeProceso();
 
         void ProcesarMensajeDeProceso()
@@ -114,8 +116,8 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
         var servicio = Services.GetRequiredService<IServicios>();
 
         servicio.MensajeRecibido += RecibirMensaje; // escucha nuevos msj
-        servicio.EmpleadoConectado += RecibirNuevoConectado;
-        servicio.EmpleadoDesconectado += RecibirNuevoDesconectado;
+        servicio.EmpleadoConectado += RecibirNuevoConectado; // escucha nuevos conectados
+        servicio.EmpleadoDesconectado += RecibirNuevoDesconectado; // escucha nuevos desconectados
 
 
         base.OnMounted();
@@ -132,19 +134,18 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
         base.OnWillUnmount();
     }
 
-
+    CommunityToolkit.Maui.Views.MediaElement refSonido = new();
+    MauiControls.CollectionView refMsjs = new();
     public override VisualNode Render()
     {
         Debug.WriteLine("tablero renderizado");
-        return 
-            new ContentPage()
+
+        return new ContentPage()
             {
                 new Grid("auto, 80, *", "*")
                 {                        
-                    GraficarEncabezado()
-                    ,
-                    GraficarListaDeMensajes()
-                    ,
+                    GraficarEncabezado(),
+                    GraficarListaDeMensajes(),
                     GraficarCuerpoDelMensaje()
                 }
             }
@@ -160,6 +161,8 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
 
             return new Grid("* *", "*")
             {
+                new ScrollView(){
+                    new VStack(){
 
                         new HStack()
                         {
@@ -191,41 +194,44 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
                                new VStack()
                                {
                                    new Label($"Hoy confirmaste notificaciones! {notisConfirmadas}/{notificacionesTotales}")
-                                    .TextColor(Colors.White)
-                                    .FontSize(12)
+                                        .TextColor(Colors.White)
+                                        .FontSize(12)
+                                        .FontAttributes(MauiControls.FontAttributes.Italic)
                                     ,
                                     new LineaProgreso()
-                                    .HStart()
-                                    .VStart()
-                                    .TrackFill(Colors.Grey)
-                                    .WidthRequest(150)
-                                    .TrackHeight(10)
-                                    .ProgressHeight(10)
-                                    .Margin(10)
-                                    .SegmentCount(notificacionesTotales)
-                                    .Progress(notificacionesTotales > 0 ? notisConfirmadas*100/notificacionesTotales: 0)
-                                    .ProgressFill(Colors.Yellow)
-                                    .IsIndeterminate(notificacionesTotales==0)
+                                        .HStart()
+                                        .VStart()
+                                        .TrackFill(Colors.Grey)
+                                        .WidthRequest(150)
+                                        .TrackHeight(10)
+                                        .ProgressHeight(10)
+                                        .Margin(5)
+                                        .SegmentCount(notificacionesTotales)
+                                        .Progress(notificacionesTotales > 0 ? notisConfirmadas*100/notificacionesTotales: 0)
+                                        .ProgressFill(Colors.Yellow)
+                                        .IsIndeterminate(notificacionesTotales==0)
 
 
                                         ,
 
                                    new Label($"Hoy completaste tareas! {tareasCompletas}/{tareasTotales}")
-                                   .TextColor(Colors.White)
-                                   .FontSize(12)
+                                       .TextColor(Colors.White)
+                                       .FontSize(12)
+                                       .FontAttributes(MauiControls.FontAttributes.Italic)
+
                                    ,
                                    new LineaProgreso()
-                                    .HStart()
-                                    .VCenter()
-                                    .TrackFill(Colors.Grey)
-                                    .WidthRequest(150)
-                                    .TrackHeight(10)
-                                    .ProgressHeight(10)
-                                    .Margin(10)
-                                    .SegmentCount(tareasTotales)
-                                    .Progress(tareasTotales > 0 ? tareasCompletas*100/tareasTotales: 0)
-                                    .ProgressFill(Colors.LightGreen)
-                                    .IsIndeterminate(tareasTotales==0)
+                                        .HStart()
+                                        .VStart()
+                                        .TrackFill(Colors.Grey)
+                                        .WidthRequest(150)
+                                        .TrackHeight(10)
+                                        .ProgressHeight(10)
+                                        .Margin(5)
+                                        .SegmentCount(tareasTotales)
+                                        .Progress(tareasTotales > 0 ? tareasCompletas*100/tareasTotales: 0)
+                                        .ProgressFill(Colors.LightGreen)
+                                        .IsIndeterminate(tareasTotales==0)
 
                                }
                                     .VCenter()
@@ -290,16 +296,11 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
                                             .IsOpen(State.IsPopupOpen)
                                             .OnClosed(()=>SetState(s => s.IsPopupOpen = false, false))
                                             .AnimationMode(PopupAnimationMode.SlideOnRight)
-                                            .AnimationDuration(130),
+                                            .AnimationDuration(130)
+                                            ,
 
                                    new ImageButton("icono_conectados4.png")
                                            .OnClicked(() => SetState(s => s.IsPopupOpen = true))
-
-                                           ,
-
-                                   new SonidoMensaje()
-                                            .Source(MediaSource.FromResource("sonido_mensaje.wav"))
-                                            .IsVisible(false)
                                            ,
 
                                    new ImageButton("icono_cerrar_sesion1.png")
@@ -308,6 +309,10 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
                                             .OnClicked(CerrarSesion)
                           }
                              .GridRow(1)
+                    }
+                }
+                .Orientation(ScrollOrientation.Horizontal)
+                .HorizontalScrollBarVisibility(ScrollBarVisibility.Always)
             }
                 .BackgroundColor(Colors.Black)
                 ;
@@ -317,10 +322,15 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
                 object seleccionados = new();
                 return new VStack()
                 {
-                     new CollectionView { }
+                    new Grid("auto", "*")
+                    {
+                         new CollectionView { }
                         .ItemsSource(State.conectados, GraficarItemEmpleadoConectado)
                         .SelectionMode(MauiControls.SelectionMode.Multiple)
                         .OnSelectedMany<CollectionView, Empleado>((a) => seleccionados = a)
+
+                    }
+
                         ,
 
                      new Button("Enviar")
@@ -346,7 +356,8 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
                                     .FontAttributes(MauiControls.FontAttributes.Bold)
 
                             }
-                            .HCenter()
+                            .Margin(10)
+                            .HStart()
                             .VCenter();
 
 
@@ -399,14 +410,16 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
         }
         VisualNode GraficarListaDeMensajes()
         {
+            var lista = State.checkBoxEnviados ? State.enviados : State.mensajes;
             return
                 new Grid("*", "*")
                 {
-                        new CollectionView()
-                            .ItemsSource(State.checkBoxEnviados ? State.enviados : State.mensajes, GraficarMensajes)
+                        new CollectionView(r => refMsjs =r)
+                            .ItemsSource(lista, GraficarMensajes)
                             .SelectionMode(MauiControls.SelectionMode.Single)
                             .OnSelectionChanged((s,e) => SeleccionarMensaje(e))
                             .ItemsLayout(new HorizontalLinearItemsLayout())
+
                 }
             .BackgroundColor(Colors.LightSteelBlue)
             .GridRow(1)
@@ -456,22 +469,26 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
 
             return new Grid("*", "*")
             {
-                msj switch
+                new VStack()
                 {
-                    { notificacion: not null } => GraficarNotificacion(msj.notificacion),
-                    { tareas: not null } => GraficarTareas(msj.tareas),
-                    { receta: not null } => GraficarReceta(msj.receta),
-                    { proceso: not null } => GraficarProceso(msj.proceso),
-                    { conversa: not null } => GraficarConversacion(msj.conversa),
-                    _ => new VStack()
+                    msj switch
+                    {
+                        { notificacion: not null } => GraficarNotificacion(msj.notificacion),
+                        { tareas: not null } => GraficarTareas(msj.tareas),
+                        { receta: not null } => GraficarReceta(msj.receta),
+                        { proceso: not null } => GraficarProceso(msj.proceso),
+                        { conversa: not null } => GraficarConversacion(msj.conversa),
+                        _ => GraficarBienvenida()
+                    }
                 }
+                //.Orientation(ScrollOrientation.Both)
+                //.HorizontalScrollBarVisibility(ScrollBarVisibility.Always)
+                //.VerticalScrollBarVisibility(ScrollBarVisibility.Always)
             }
                 .GridRow(2)
                 .BackgroundColor(Colors.CornflowerBlue)
                 .VFill()
                 ;
-                
-
 
             VisualNode GraficarNotificacion(Notificacion notificacion)
             {
@@ -503,11 +520,22 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
 
                             ,
 
+                        new VStack()
+                        {
 
-                        new Label($"{notificacion.texto}")
-                            .FontFamily("bold")
-                            .FontSize(25)
-                            .HCenter()
+
+                            new Label($"{notificacion.texto}")
+                                .FontFamily("bold")
+                                .FontSize(25)
+                                .HCenter(),
+
+                            new Image()
+                                .Source(notificacion.imagen is not null ?
+                                    MauiControls.ImageSource.FromStream(() => new MemoryStream(notificacion.imagen)) :
+                                    MauiControls.ImageSource.FromResource(""))
+                                .WidthRequest(300)
+                                .HeightRequest(150)
+                        }
 
 
                             ,
@@ -548,7 +576,7 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
                         new SKLottieView()
                             .Source(new SkiaSharp.Extended.UI.Controls.SKFileLottieImageSource()
                             {
-                                 File = "recetas.json"
+                                File = "recetas.json"
                             })
                             .IsAnimationEnabled(true)
                             .RepeatCount(-1)
@@ -569,12 +597,54 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
                     }
 
                     ,
-
-                    receta.pasos.Select((p,i) => new Label($"Paso n°{i}: {p.paso}")
-                        .FontAttributes(MauiControls.FontAttributes.Bold)
-                        .TextColor(Colors.Black))
-
+                    new Grid("*", "*")
+                    {
+                        new CollectionView()
+                            .ItemsSource(receta.pasos, GraficarCajaPasos)
+                    }.HStart()
                 };
+                VisualNode GraficarCajaPasos(PasoReceta paso)
+                {
+                    return new Border()
+                {
+                    new VStack()
+                    {
+                        new HStack()
+                        {
+                            new Label($"Paso n°{Array.IndexOf(receta.pasos, paso)}")
+                                .TextColor(Colors.Black)
+                                .FontAttributes(MauiControls.FontAttributes.Bold)
+                                .FontSize(30)
+                                .TextDecorations(TextDecorations.Underline)
+                                .HStart()
+                        }
+
+                         ,
+                            new VStack()
+                            {
+                                new Label(paso.paso)
+                                .TextColor(Colors.Black)
+                                .FontSize(15)
+                                .Margin(5)
+                                .HStart()
+                            }
+
+                                ,
+
+
+                                new Image()
+                                .Source(MauiControls.ImageSource.FromStream(() => new MemoryStream(paso.imagen)))
+                                .HeightRequest(200)
+                                .WidthRequest(200)
+                                .HEnd()
+                    }
+                }
+                    .WidthRequest(400)
+                    .StrokeCornerRadius(15, 15, 15, 15)
+                    .Stroke(Colors.White)
+                    ;
+
+                }
 
             }
             VisualNode GraficarTareas(Tareas tareas)
@@ -615,6 +685,7 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
                                     .Progress(tareas.Progreso() * 100 / tareas.Cantidad())
                                     .IsIndeterminate(tareas.estado is Tareas.Estado.NoIniciado)
                                     .ProgressFill(Colors.Green)
+                                    .TrackFill(Colors.DarkGray)
                                     .ProgressThickness(7)
                                     .TrackThickness(7)
                                     .HeightRequest(50)
@@ -635,7 +706,7 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
                         .HStart()
                             ,
 
-                        new Grid("*", "*")
+                        new Grid("*", "auto")
                         {
                              new CollectionView()
                                 .ItemsSource(tareas.tareas, (t) => GraficarCajaTarea(t, TareaCambiada))
@@ -726,7 +797,7 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
 
                         new VStack()
                         {
-                             new Label($"Proceso productivo  #{State.mensajeSeleccionado.idMensaje}")
+                             new Label($"Proceso #{State.mensajeSeleccionado.proceso.id}")
                             .FontAttributes(MauiControls.FontAttributes.Bold)
                             .TextDecorations(TextDecorations.Underline)
                             .Padding(10)
@@ -737,9 +808,21 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
 
                             ,
 
+                            new BarraProgreso()
+                                    .IsIndeterminate(proceso.estado is Proceso.Estado.NoIniciado)
+                                    .ProgressFill(Colors.Green)
+                                    .TrackFill(Colors.DarkGray)
+                                    .ProgressThickness(7)
+                                    .TrackThickness(7)
+                                    .HeightRequest(50)
+                                    .SegmentGapWidth(3)
+                                    .HCenter()
+                                    ,
+
                             new Label($"{proceso.estado}")
-                            .VCenter()
-                            .Margin(35,0,0,0)
+                                .VCenter()
+                                .HCenter()
+                                .FontAttributes(MauiControls.FontAttributes.Bold)
                         }
 
                     }
@@ -747,7 +830,7 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
 
                         ,
 
-                    new Grid("*", "*")
+                    new Grid("*", "auto")
                     {
                          new CollectionView()
                             .ItemsLayout(new HorizontalLinearItemsLayout())
@@ -766,28 +849,24 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
                         new Button("PAUSAR PROCESO")
                             .TextColor(Colors.Black)
                             .BackgroundColor(Colors.Red)
+                        ,
+                        new Button("Agregar nuevo mensaje")
+                            .TextColor(Colors.Black)
 
                     }
                     .HCenter()
 
                 }
-                .HCenter()
+                .HStart()
                 ;
 
                 VisualNode GraficarCajaMensajeProceso(Mensaje m)
                 {
-                    return new Border()
-                    {
-                        new VStack()
-                        {
-                            new Label($"msj #{m.idMensaje}"),
-                            new Label($"estado {m.estado}"),
-                            new Label($"recibe {m.receptor.nombreEmpleado}")
-                        }
-                    }
-                    .Margin(5)
-                    .StrokeCornerRadius(5,5,5,5)
-                    .Stroke(Colors.White)
+
+
+                    return new CajaMensaje()
+                        .Mensaje(m)
+
                     ;
                 }
             }
@@ -899,16 +978,174 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
                 }
 
             }
+            VisualNode GraficarBienvenida()
+            {
+                return
+                    new VStack(){
+                        new Label()
+                            .Text("Bienvenido a la app POC!")
+                            .FontSize(30)
+                            .FontAttributes(MauiControls.FontAttributes.Bold)
+                            .TextDecorations(TextDecorations.Underline)
+                            .TextColor(Colors.Black)
+
+                            ,
+
+                        new Label()
+                            .Margin(10)
+                            .Text("Esta es una herramienta que ayuda a comunicarse con otros " +
+                            "sectores de la fábrica, te permite enviar mensajes de diversos tipos a otros empleados")
+                            .FontSize(20)
+                            ,
+
+                        new Label()
+                            .Margin(10)
+                            .FontSize(20)
+                            .TextDecorations(TextDecorations.Underline)
+                            .TextColor(Colors.Green)
+                            .Text("Podes enviar mensajes de tipo:")
+
+                        ,
+                        new VStack()
+                        {
+                                new HStack()
+                                {
+                                     new SKLottieView()
+                                        .Source(new SkiaSharp.Extended.UI.Controls.SKFileLottieImageSource()
+                                        {
+                                             File = "notificacion1.json"
+                                        })
+                                        .IsAnimationEnabled(true)
+                                        .RepeatCount(-1)
+                                        .HeightRequest(70)
+                                        .WidthRequest(70)
+
+                                        ,
+
+                                     new Label()
+                                        .Margin(10)
+                                        .FontSize(14)
+                                        .TextColor(Colors.Black)
+                                        .FontAttributes(MauiControls.FontAttributes.Bold)
+                                        .Text("Notificacion es un mensaje que requiere confirmación")
+                                }
+                            ,
+                                new HStack()
+                                {
+                                     new SKLottieView()
+                                        .Source(new SkiaSharp.Extended.UI.Controls.SKFileLottieImageSource()
+                                        {
+                                             File = "recetas.json"
+                                        })
+                                        .IsAnimationEnabled(true)
+                                        .RepeatCount(-1)
+                                        .HeightRequest(70)
+                                        .WidthRequest(70)
+
+                                        ,
+
+                                    new Label()
+                                        .Margin(10)
+                                        .FontSize(14)
+                                        .TextColor(Colors.Black)
+                                        .FontAttributes(MauiControls.FontAttributes.Bold)
+                                        .Text("Receta es un mensaje con pasos a seguir")
+                                }
+                            ,
+                                new HStack()
+                                {
+                                     new SKLottieView()
+                                        .Source(new SkiaSharp.Extended.UI.Controls.SKFileLottieImageSource()
+                                        {
+                                             File = "tareas.json"
+                                        })
+                                        .IsAnimationEnabled(true)
+                                        .RepeatCount(-2)
+                                        .HeightRequest(70)
+                                        .WidthRequest(70)
+
+                                        ,
+
+                                    new Label()
+                                        .FontAttributes(MauiControls.FontAttributes.Bold)
+                                        .TextColor(Colors.Black)
+                                        .Margin(10)
+                                        .FontSize(14)
+                                        .Text("Tareas es un mensaje en el que se pueden adjuntar tareas a realizar")
+                                }
+                            ,
+                                new HStack()
+                                {
+                                     new SKLottieView()
+                                        .Source(new SkiaSharp.Extended.UI.Controls.SKFileLottieImageSource()
+                                        {
+                                             File = "notificacion1.json"
+                                        })
+                                        .IsAnimationEnabled(true)
+                                        .RepeatCount(-1)
+                                        .HeightRequest(70)
+                                        .WidthRequest(70)
+
+                                        ,
+
+                                    new Label()
+                                        .Margin(10)
+                                        .FontSize(14)
+                                        .TextColor(Colors.Black)
+                                        .FontAttributes(MauiControls.FontAttributes.Bold)
+                                        .Text("Convesa es un mensaje que inicia un chat")
+                                }
+                            ,
+                                new HStack()
+                                {
+                                     new SKLottieView()
+                                        .Source(new SkiaSharp.Extended.UI.Controls.SKFileLottieImageSource()
+                                        {
+                                             File = "proceso1.json"
+                                        })
+                                        .IsAnimationEnabled(true)
+                                        .RepeatCount(-1)
+                                        .HeightRequest(70)
+                                        .WidthRequest(70)
+
+                                        ,
+
+                                     new VStack(){
+                                     new Label()
+                                        .MaxLines(5)
+                                        .Margin(10)
+                                        .FontSize(14)
+                                        .TextColor(Colors.Black)
+                                        .FontAttributes(MauiControls.FontAttributes.Bold)
+                                        .LineBreakMode(LineBreakMode.WordWrap)
+                                        .Text("Proceso es un mensaje en el que se pueden adjuntar cadenas de mensajes a enviar automaticamente")
+                                     }
+                                     .WidthRequest(300)
+                                }
+                        }
+                        .HStart()
+                        .WidthRequest(300)
+                    }
+                ;
+            }
 
             async void IniciarProceso(Proceso proceso)
             {
                 var msjAEnviar = proceso.IniciarProceso(); // Saca el primer mensaje del proceso
+                var receptores = proceso.ObtenerReceptores();
+                var faltan = "";
 
-                var receptorActivo = State.conectados.Any(e => e.idEmpleado == msjAEnviar.receptor.idEmpleado);
-
-                if (!receptorActivo)
+                foreach (var e in receptores)
                 {
-                    await ContainerPage.DisplayAlert("Error", "No se puede iniciar el proceso, los receptores no estan activos", "Ok");
+                    if (!State.conectados.Any(c => c.idEmpleado == e.idEmpleado))
+                    {
+                        faltan += $"{e.nombreEmpleado}, ";
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(faltan))
+                {
+                    await ContainerPage.DisplayAlert("Error", $"No se puede iniciar el proceso, los receptores {faltan} no estan activos", "Ok");
                     return;
                 }
 
@@ -975,10 +1212,30 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
 
     private async void RecibirMensaje(object sender, Mensaje msjRecibido)
     {
+
         // Guardar el mensaje como recibido
         SetState(s => s.AñadirOActualizarMensaje(msjRecibido));
 
-        if (msjRecibido is { actualizacion: not null }) return;
+        if (msjRecibido is { actualizacion: not null }) // Si es una actualizacion
+        {
+            AudioManager.Current.CreatePlayer(await FileSystem.OpenAppPackageFileAsync("actualizacion_mensaje.mp3")).Play();
+            var lista = msjRecibido.actualizacion.emisor.idEmpleado == State.empleadoOperativo.idEmpleado ? State.enviados : State.mensajes;
+            var indice = lista.IndexOf(msjRecibido.actualizacion); if (indice == -1) return;
+            await ContainerPage.Dispatcher.DispatchAsync(() => refMsjs.ScrollTo(indice));
+            return;
+        }
+
+        try
+        {
+            AudioManager.Current.CreatePlayer(await FileSystem.OpenAppPackageFileAsync("nuevo_mensaje.wav")).Play();
+
+        }
+        catch (Exception ex)
+        {
+
+            throw;
+        }
+        await ContainerPage.Dispatcher.DispatchAsync(() => refMsjs.ScrollTo(0));
 
         // Es un nuevo mensaje hay que responder qeu se recibió
         var emisor = msjRecibido.emisor;
@@ -1005,6 +1262,9 @@ public class PantallaTablero : Component<estado_del_tablero, parametros_tablero>
 
     public static async Task EnviarMensaje(Mensaje mensajeAEnviar)
     {
+        if (mensajeAEnviar is { emisor: null } || mensajeAEnviar is { receptor: null })
+            return;
+
         await Services.GetRequiredService<IServicios>()
             .EnviarMensaje(new SolicitudEnviarMensaje() { mensaje = mensajeAEnviar });
     }

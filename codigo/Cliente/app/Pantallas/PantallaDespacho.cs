@@ -1,8 +1,11 @@
 ﻿using Contratos;
 using MauiReactor;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Controls.PlatformConfiguration;
+using Microsoft.Maui.Storage;
 using System;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using static app.Componentes.estado_del_despacho;
 
@@ -26,7 +29,6 @@ public class estado_del_despacho
         Conversa = 4
     }
     public Mensaje nuevoMensaje { get; set; } = new Mensaje();
-    public ObservableCollection<Tarea> tareas { get; set; } = new ObservableCollection<Tarea>();
     public Cuerpo tipoMensaje { get; set; }
 
     public void LimpiarCuerpoMensaje()
@@ -40,6 +42,9 @@ public class estado_del_despacho
 }
 public class PantallaDespacho : Component<estado_del_despacho, parametros_despacho>
 {
+    ObservableCollection<Tarea> tareas = new();
+    ObservableCollection<PasoReceta> pasos = new();
+
     protected override void OnMounted()
     {
         State.nuevoMensaje.emisor = Props.empleadoOperativo;
@@ -48,6 +53,7 @@ public class PantallaDespacho : Component<estado_del_despacho, parametros_despac
     {
         string nombres = "";
         Props.empleadoConectadoSeleccionado.ToList().ForEach(e => nombres += $"{e.nombreEmpleado}, ");
+
         return
             new ContentPage()
             {
@@ -110,6 +116,9 @@ public class PantallaDespacho : Component<estado_del_despacho, parametros_despac
 
         VisualNode GraficarFormularioNotificacion() 
         {
+            MauiControls.Image refNotiImg = new();
+            SetState(s => { s.LimpiarCuerpoMensaje(); s.nuevoMensaje.notificacion = new Notificacion(); });
+
             return new VStack()
             {
                 new Label("Nueva notificacion")
@@ -122,16 +131,41 @@ public class PantallaDespacho : Component<estado_del_despacho, parametros_despac
                     .HCenter()
                     .Margin(20)
                     .Placeholder("Ingrese el texto de la notificacion")
-                    .OnTextChanged((t) => SetState(s => s.nuevoMensaje.notaMensaje = t))
+                    .OnTextChanged((t) => State.nuevoMensaje.notificacion.texto=t)
 
                     ,
 
                 new Label("Adjunte una imagen")
                     .HCenter()
+                    .OnTapped(async () =>
+                        {
+                            var r = await FilePicker.PickAsync(new PickOptions(){ FileTypes= FilePickerFileType.Images });
+                            if(r is null) return;
+
+                            var stream = await r.OpenReadAsync();
+
+                            byte[] bytes;
+
+                            using var lector = new BinaryReader(stream);
+                            bytes= lector.ReadBytes((int)stream.Length);
+                            await stream.DisposeAsync();
+
+                            State.nuevoMensaje.notificacion.imagen = bytes;
+
+                            refNotiImg.Source = MauiControls.ImageSource.FromStream(() => new MemoryStream(bytes));
+                        })
+                    ,
+
+                new Image(r => refNotiImg=r)
+                    .HeightRequest(300)
+                    .WidthRequest(150)
+
             };
         }
         VisualNode GraficarFormularioTareas() 
         {
+
+            SetState(s => { s.LimpiarCuerpoMensaje(); s.nuevoMensaje.tareas = new Tareas(); });
             return new VStack()
             {
                 new Label("Nuevas tareas")
@@ -153,13 +187,14 @@ public class PantallaDespacho : Component<estado_del_despacho, parametros_despac
 
 
                 new CollectionView()
-                    .ItemsSource(State.tareas, GraficarCajaTarea)
+                    .ItemsSource(tareas, GraficarCajaTarea)
             };
 
             void AgregarTarea(object sender, EventArgs e) 
             {
                 var texto = ((MauiControls.Entry)sender).Text;
-                SetState(s => s.tareas.Add(new Tarea() { instrucciones = texto, estadoTarea = Tarea.Estado.NoRealizada }));
+                tareas.Add(new Tarea() { instrucciones = texto, estadoTarea = Tarea.Estado.NoRealizada });
+
                 ((MauiControls.Entry)sender).Text = "";
             }
             VisualNode GraficarCajaTarea(Tarea tarea) 
@@ -183,7 +218,7 @@ public class PantallaDespacho : Component<estado_del_despacho, parametros_despac
                             .HeightRequest(35)
                             .BackgroundColor(Colors.Red)
                             .HEnd()
-                            .OnClicked( () => SetState( s=> s.tareas.Remove(tarea)))
+                            .OnClicked( () => tareas.Remove(tarea))
 
                     }
                     .HFill()
@@ -197,19 +232,133 @@ public class PantallaDespacho : Component<estado_del_despacho, parametros_despac
             }
 
         }
-        VisualNode GraficarFormularioReceta() 
+        VisualNode GraficarFormularioReceta()
         {
+
+            SetState(s => { s.LimpiarCuerpoMensaje(); s.nuevoMensaje.receta = new Receta(); });
+            byte[] imagen = Array.Empty<byte>();
+
             return new VStack()
             {
-                new Label("Ingrese RECETA a enviar"),
+                new Label("Nuevas Receta")
+                    .HCenter()
+                    .TextColor(Colors.White)
+                    .FontSize(25)
 
-                new Entry()
-                .Placeholder("Ingrese tareas individuales a enviar")
-                .OnTextChanged((t) => SetState(s => s.nuevoMensaje.notaMensaje = t))
+                    ,
+
+                new HStack()
+                {
+                    new Button("Adjunte una imagen")
+                        .Margin(20)
+                        .HCenter()
+                        .TextColor(Colors.Black)
+                        .OnClicked(async () =>
+                        {
+                                var r = await FilePicker.PickAsync(new PickOptions(){ FileTypes= FilePickerFileType.Images });
+                                if(r is null) return;
+
+                                var stream = await r.OpenReadAsync();
+
+                                using var lector = new BinaryReader(stream);
+                                imagen= lector.ReadBytes((int)stream.Length);
+                                await stream.DisposeAsync();
+                        })
+
+                        ,
+
+                     new Entry()
+                        .Margin(20)
+                        .HCenter()
+                        .TextColor(Colors.White)
+                        .Placeholder("Ingrese un paso de la receta")
+                        .OnCompleted((s, e) => AgregarPaso(s,e))
+                        .WidthRequest(200)
+                    
+                },
+
+
+
+                new Grid("*", "*")
+                {
+                    new CollectionView()
+                        .ItemsSource(pasos, GraficarCajaPasos)
+                }
+
             };
+
+            async void AgregarPaso(object sender, EventArgs e)
+            {
+                if (imagen.Length < 1)
+                {
+                    await ContainerPage.DisplayAlert("Error", "Debe ingresar una imagen", "ok!");
+                    return;
+                }
+
+                var texto = ((MauiControls.Entry)sender).Text;
+                pasos.Add(new PasoReceta() { paso = texto, imagen= imagen });
+
+                ((MauiControls.Entry)sender).Text = "";
+                imagen = Array.Empty<byte>();
+            }
+            VisualNode GraficarCajaPasos(PasoReceta paso)
+            {
+                return new Border()
+                {
+                    new VStack()
+                    {
+                        new HStack()
+                        {
+                            new Label($"Paso n°{pasos.IndexOf(paso)}")
+                                .TextColor(Colors.Black)
+                                .FontAttributes(MauiControls.FontAttributes.Bold)
+                                .FontSize(30)
+                                .TextDecorations(TextDecorations.Underline)
+                                .HStart()
+
+                                ,
+
+                            new Button()
+                                    .Text("X").HCenter().FontSize(30)
+                                    .TextColor(Colors.Black)
+                                    .HeightRequest(35)
+                                    .BackgroundColor(Colors.Red)
+                                    .HEnd()
+                                    .OnClicked( () => pasos.Remove(paso))
+
+                        }
+
+                         ,
+                            new VStack()
+                            {
+                                new Label(paso.paso)
+                                .TextColor(Colors.Black)
+                                .FontSize(15)
+                                .Margin(5)
+                                .HStart()
+                            }
+
+                                ,
+
+
+                                new Image()
+                                .Source(MauiControls.ImageSource.FromStream(() => new MemoryStream(paso.imagen)))
+                                .HeightRequest(200)
+                                .WidthRequest(200)
+                                .HEnd()
+                    }
+                }
+                .WidthRequest(400)
+                .StrokeCornerRadius(15, 15, 15, 15)
+                .Stroke(Colors.White)
+                ;
+
+            }
+
         }
         VisualNode GraficarFormularioConversacion()
         {
+            SetState(s => { s.LimpiarCuerpoMensaje(); s.nuevoMensaje.conversa = new Conversacion() { mensajesDeTexto = new ObservableCollection<Mensaje>()}; });
             return new Label("Inicie una nueva conversacion");
         }
     }
@@ -218,24 +367,8 @@ public class PantallaDespacho : Component<estado_del_despacho, parametros_despac
     {
         msj.estado = Mensaje.Estado.Despachado;
 
-        switch (State.tipoMensaje)
-        {
-            case Cuerpo.Notificacion:
-                msj.notificacion = new Notificacion();
-                break;
-            case Cuerpo.Tareas:
-                msj.tareas = new Tareas() { tareas = State.tareas.ToArray() };
-                break;
-            case Cuerpo.Receta:
-                msj.receta = new Receta() { };
-                break;
-            case Cuerpo.Conversa:
-                msj.conversa = new Conversacion() { mensajesDeTexto = new ObservableCollection<Mensaje>() };
-                break;
-            default:
-                break;
-        }
-
+        if (msj is { receta: not null }) msj.receta.pasos = pasos.ToArray();
+        if (msj is { tareas: not null }) msj.tareas.tareas = tareas.ToArray();
 
         // obtener el servicio
         var servicio = Services.GetRequiredService<Servicios.IServicios>();

@@ -47,7 +47,7 @@ public class Notificacion
 
     public Estado estadoActual { get; set; }
     public string? texto { get; set; }
-    public string? urlImagen { get; set; }
+    public byte[]? imagen { get; set; }
     public string? respuesta { get; set; }
 }
 public class Tareas 
@@ -121,7 +121,7 @@ public class Receta
 public class PasoReceta
 {
     public string paso { get; set; }
-    public string urlImagen { get; set; }
+    public byte[] imagen { get; set; }
 }
 public class Proceso
 {
@@ -160,6 +160,12 @@ public class Proceso
     {
         estado = Estado.EnProceso;
         return this;
+    }
+    public List<Empleado> ObtenerReceptores()
+    {
+        var r = new List<Empleado>();
+        cadena.ToList().ForEach(m => r.Add(m.receptor));
+        return r;
     }
 }
 public class Conversacion
